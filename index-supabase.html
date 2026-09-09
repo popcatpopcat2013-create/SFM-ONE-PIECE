@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Media Upload & Preview</title>
+<style>
+:root{
+  --bg:#f5f5f7;
+  --card:#fff;
+  --text:#1d1d1f;
+  --muted:#86868b;
+  --blue:#0071e3;
+  --blue-dark:#005fc4;
+  --shadow:0 3px 14px rgba(0,0,0,.09);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+body{overflow-x:hidden}
+button{font:inherit}
+.container{max-width:1100px;margin:auto;padding:42px 24px 80px}
+header{text-align:center;margin-bottom:34px}
+header h1{margin:0 0 8px;font-size:clamp(28px,5vw,40px);letter-spacing:-.02em}
+header p{margin:0;color:var(--muted);font-size:16px}
+.upload-area{text-align:center;margin-bottom:34px}
+.upload-buttons{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.upload-btn{border:0;border-radius:999px;padding:15px 28px;background:var(--blue);color:white;font-weight:650;font-size:17px;display:inline-flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 5px 18px rgba(0,113,227,.28);transition:.15s transform}
+.upload-btn.video{background:#333;box-shadow:0 5px 18px rgba(0,0,0,.18)}
+.upload-btn:active{transform:scale(.96)}
+.upload-btn svg{width:20px;height:20px}
+.count-label{display:block;color:var(--muted);font-size:15px;margin:17px 0 14px;min-height:18px}
+.actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+.action-btn{border:1.5px solid var(--blue);background:white;color:var(--blue);border-radius:999px;padding:9px 15px;display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer}
+.action-btn.video{border-color:#333;color:#333}
+.action-btn:active{transform:scale(.96)}
+.action-btn svg{width:17px;height:17px}
+.clear-btn{border:0;background:none;color:var(--blue);font-weight:600;cursor:pointer;padding:8px}
+.empty-state{border:2px dashed rgba(0,0,0,.1);border-radius:20px;padding:70px 20px;text-align:center;color:var(--muted)}
+.empty-state svg{width:45px;height:45px;opacity:.4;margin-bottom:12px}
+.empty-state p{margin:0}
+.media-section{display:none;margin-top:38px}
+.media-section.show{display:block}
+.media-section h2{font-size:25px;margin:0 0 17px;letter-spacing:-.02em}
+.gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.card{position:relative;border-radius:17px;overflow:hidden;box-shadow:var(--shadow);background:#ddd;animation:in .28s ease both}
+.card.image-card{aspect-ratio:1}
+.card.video-card{aspect-ratio:16/9;cursor:default;background:#111}
+.card img,.card video{display:block;width:100%;height:100%;object-fit:cover}
+.card img{background:#ddd}
+.card video{background:#111;pointer-events:none}
+@keyframes in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.delete-btn,.favorite-btn{position:absolute;top:9px;width:31px;height:31px;border:0;border-radius:50%;background:rgba(0,0,0,.48);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:white;display:flex;align-items:center;justify-content:center;padding:0;z-index:5;cursor:pointer}
+.delete-btn{right:9px}.favorite-btn{left:9px}
+.delete-btn svg,.favorite-btn svg{width:16px;height:16px}
+.favorite-btn.active svg{fill:currentColor}
+.delete-btn:active,.favorite-btn:active{transform:scale(.84)}
+.play-badge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.58);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:white;display:flex;align-items:center;justify-content:center;z-index:3;pointer-events:none}
+.play-badge svg{width:22px;height:22px;margin-left:3px}
+
+/* Preview overlay */
+.preview-overlay{position:fixed;inset:0;z-index:1000;background:var(--bg);transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);overflow:auto;-webkit-overflow-scrolling:touch}
+.preview-overlay.open{transform:translateY(0)}
+.preview-header{position:sticky;top:0;z-index:20;height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(245,245,247,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,.08)}
+.preview-header h2{font-size:21px;margin:0}
+.done-btn{border:0;background:none;color:var(--blue);font-size:17px;font-weight:650;cursor:pointer}
+
+/* Images = masonry */
+.preview-images-grid{column-width:240px;column-gap:20px;padding:24px}
+.preview-images-grid .preview-card{break-inside:avoid;-webkit-column-break-inside:avoid;margin:0 0 20px;position:relative;border-radius:17px;overflow:hidden;box-shadow:var(--shadow);background:#ddd;cursor:pointer}
+.preview-images-grid img{display:block;width:100%;height:auto}
+
+/* Videos = real grid, never columns */
+.preview-videos-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:24px;align-items:start}
+.preview-videos-grid .preview-card{position:relative;width:100%;aspect-ratio:16/9;border-radius:17px;overflow:hidden;background:#111;box-shadow:var(--shadow);cursor:pointer}
+.preview-videos-grid video{display:block;width:100%;height:100%;object-fit:cover;background:#111;pointer-events:none;cursor:default}
+
+/* Favorite preview can contain both types */
+.preview-favorites-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;padding:24px;align-items:start}
+.preview-favorites-grid .preview-card{position:relative;border-radius:17px;overflow:hidden;background:#ddd;box-shadow:var(--shadow);cursor:pointer}
+.preview-favorites-grid .preview-card.image{aspect-ratio:1}
+.preview-favorites-grid .preview-card.video{aspect-ratio:16/9;background:#111}
+.preview-favorites-grid img,.preview-favorites-grid video{width:100%;height:100%;display:block;object-fit:cover}
+
+.preview-heart{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:white;display:flex;align-items:center;justify-content:center;z-index:4;pointer-events:none}
+.preview-heart svg{width:17px;height:17px;fill:currentColor}
+.preview-empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:80px 20px;font-size:16px}
+.preview-empty .big{font-size:44px;margin-bottom:10px}
+
+/* Large image/video viewer */
+.viewer{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.58);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:center;padding:22px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s,visibility .2s;touch-action:auto}
+.viewer.open{opacity:1;visibility:visible;pointer-events:auto}
+.viewer-inner{position:relative;max-width:94vw;max-height:90vh;display:flex;align-items:center;justify-content:center;transform:scale(.9);opacity:0;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.viewer.open .viewer-inner{transform:scale(1);opacity:1}
+.viewer img{display:block;max-width:94vw;max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.45);user-select:none;-webkit-user-drag:none}
+.viewer video{display:block;max-width:94vw;max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:18px;background:#000;box-shadow:0 20px 70px rgba(0,0,0,.45);pointer-events:auto}.viewer-video-holder{display:flex;align-items:center;justify-content:center;max-width:94vw;max-height:88vh;pointer-events:auto}
+.viewer-close{position:absolute;top:-12px;right:-12px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(45,45,45,.82);color:white;display:flex;align-items:center;justify-content:center;z-index:10;cursor:pointer}
+.viewer-close svg{width:18px;height:18px}
+.viewer-heart{position:absolute;left:12px;bottom:12px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.58);color:white;display:flex;align-items:center;justify-content:center;z-index:10;pointer-events:none}
+.viewer-heart svg{width:21px;height:21px;fill:currentColor}
+.swipe-left{animation:swipeLeft .22s ease}.swipe-right{animation:swipeRight .22s ease}
+@keyframes swipeLeft{0%{transform:translateX(0) scale(1);opacity:1}45%{transform:translateX(-25px) scale(.97);opacity:.45}100%{transform:translateX(0) scale(1);opacity:1}}
+@keyframes swipeRight{0%{transform:translateX(0) scale(1);opacity:1}45%{transform:translateX(25px) scale(.97);opacity:.45}100%{transform:translateX(0) scale(1);opacity:1}}
+
+@media(max-width:850px){
+  .gallery{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .preview-favorites-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .preview-videos-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .container{padding:30px 15px 60px}
+  .upload-btn{padding:14px 22px;font-size:16px}
+  .gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .media-section{margin-top:30px}
+  .media-section h2{font-size:22px}
+  .preview-header{height:62px;padding:0 16px}
+  .preview-images-grid{column-width:160px;column-gap:12px;padding:16px}
+  .preview-images-grid .preview-card{margin-bottom:12px}
+  .preview-videos-grid{grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+  .preview-favorites-grid{grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+  .viewer{padding:14px}
+  .viewer img,.viewer video{max-width:96vw;max-height:84vh}
+}
+
+/* ===== Upload page visual refresh: Pinterest x Minimal Apple ===== */
+.container{max-width:1180px;padding:46px 24px 90px}
+header{margin-bottom:30px}
+header h1{font-size:clamp(32px,6vw,48px);font-weight:700;letter-spacing:-.045em;line-height:1.05}
+header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
+.upload-area{background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.06);border-radius:28px;padding:24px;box-shadow:0 10px 35px rgba(0,0,0,.06);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);margin-bottom:30px}
+.upload-buttons{gap:12px}
+.upload-btn{min-height:52px;padding:14px 24px;border-radius:16px;background:#111;color:#fff;box-shadow:0 8px 22px rgba(0,0,0,.13);font-size:16px;font-weight:650;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.upload-btn.video{background:#f0f0f2;color:#1d1d1f;box-shadow:none;border:1px solid rgba(0,0,0,.07)}
+.upload-btn:hover{transform:translateY(-1px);box-shadow:0 11px 28px rgba(0,0,0,.16)}
+.upload-btn.video:hover{box-shadow:0 7px 18px rgba(0,0,0,.07)}
+.upload-btn:active{transform:scale(.97)}
+.count-label{margin:15px 0 17px;font-size:13px;font-weight:550;letter-spacing:.01em}
+.actions{gap:9px;padding-top:2px}
+.action-btn{padding:10px 15px;border:1px solid rgba(0,0,0,.09);background:#f7f7f8;color:#242426;border-radius:13px;font-size:14px;font-weight:600;box-shadow:none;transition:transform .16s ease,background .16s ease,box-shadow .16s ease}
+.action-btn:hover{background:#fff;box-shadow:0 5px 15px rgba(0,0,0,.07);transform:translateY(-1px)}
+.action-btn.video{border-color:rgba(0,0,0,.09);color:#242426}
+.action-btn:active{transform:scale(.96)}
+.clear-btn{color:#8a8a90;font-size:14px;padding:10px 12px;border-radius:12px;transition:.16s ease}
+.clear-btn:hover{background:rgba(0,0,0,.05);color:#555}
+.empty-state{border:1px dashed rgba(0,0,0,.13);border-radius:24px;background:rgba(255,255,255,.5);padding:76px 20px;color:#99999f}
+.empty-state svg{width:42px;height:42px;opacity:.32}
+.empty-state p{font-size:15px}
+.media-section{margin-top:44px}
+.media-section h2{display:flex;align-items:center;gap:10px;font-size:23px;font-weight:700;letter-spacing:-.035em;margin:0 0 18px;padding-left:3px}
+.media-section h2:after{content:"";height:1px;background:rgba(0,0,0,.08);flex:1;margin-left:6px}
+.gallery{gap:14px}
+.card{border-radius:20px;box-shadow:0 7px 24px rgba(0,0,0,.075);transition:transform .2s ease,box-shadow .2s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 11px 30px rgba(0,0,0,.11)}
+.delete-btn,.favorite-btn{width:34px;height:34px;top:10px;background:rgba(20,20,22,.58);box-shadow:0 4px 12px rgba(0,0,0,.15);transition:transform .16s ease,background .16s ease}
+.delete-btn{right:10px}.favorite-btn{left:10px}
+.delete-btn:hover,.favorite-btn:hover{background:rgba(20,20,22,.72)}
+.play-badge{width:48px;height:48px;background:rgba(15,15,17,.62);box-shadow:0 5px 18px rgba(0,0,0,.2)}
+@media(max-width:600px){
+  .container{padding:28px 14px 65px}
+  header{margin-bottom:24px}
+  header h1{font-size:34px}
+  header p{font-size:14px}
+  .upload-area{padding:18px 14px;border-radius:22px}
+  .upload-buttons{display:grid;grid-template-columns:1fr;gap:10px}
+  .upload-btn{width:100%;justify-content:center}
+  .actions{gap:7px}
+  .action-btn{font-size:13px;padding:9px 12px}
+  .media-section{margin-top:34px}
+  .media-section h2{font-size:21px}
+  .gallery{gap:11px}
+  .card{border-radius:16px}
+}
+
+
+/* ===== Preview Images visual refresh: Pinterest x Minimal Apple ===== */
+.preview-overlay{
+  background:#f7f7f8;
+}
+.preview-header{
+  height:76px;
+  padding:0 28px;
+  background:rgba(247,247,248,.82);
+  border-bottom:1px solid rgba(0,0,0,.055);
+  box-shadow:0 5px 24px rgba(0,0,0,.035);
+}
+.preview-header h2{
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:-.035em;
+}
+.done-btn{
+  min-height:38px;
+  padding:0 15px;
+  border-radius:12px;
+  background:rgba(0,0,0,.055);
+  color:#1d1d1f;
+  font-size:15px;
+  font-weight:650;
+  transition:transform .16s ease,background .16s ease;
+}
+.done-btn:active{transform:scale(.95)}
+.done-btn:hover{background:rgba(0,0,0,.09)}
+.preview-images-grid{
+  column-width:250px;
+  column-gap:18px;
+  padding:24px 26px 50px;
+  max-width:1500px;
+  margin:0 auto;
+}
+.preview-images-grid .preview-card{
+  margin:0 0 18px;
+  border-radius:18px;
+  box-shadow:0 6px 22px rgba(0,0,0,.075);
+  background:#e9e9eb;
+  transform:translateZ(0);
+  transition:transform .22s ease,box-shadow .22s ease;
+}
+.preview-images-grid .preview-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 30px rgba(0,0,0,.12);
+}
+.preview-images-grid img{
+  display:block;
+  width:100%;
+  height:auto;
+  transition:filter .2s ease;
+}
+.preview-images-grid .preview-card:active{
+  transform:scale(.985);
+}
+.preview-images-grid .preview-heart{
+  top:10px;
+  right:10px;
+  width:34px;
+  height:34px;
+  background:rgba(18,18,20,.48);
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.preview-images-grid .preview-heart svg{
+  width:17px;
+  height:17px;
+}
+@media(max-width:600px){
+  .preview-header{
+    height:64px;
+    padding:0 16px;
+  }
+  .preview-header h2{font-size:20px}
+  .done-btn{
+    min-height:36px;
+    padding:0 13px;
+    font-size:14px;
+    border-radius:11px;
+  }
+  .preview-images-grid{
+    column-width:160px;
+    column-gap:11px;
+    padding:14px 12px 34px;
+  }
+  .preview-images-grid .preview-card{
+    margin-bottom:11px;
+    border-radius:15px;
+    box-shadow:0 5px 17px rgba(0,0,0,.075);
+  }
+  .preview-images-grid .preview-heart{
+    top:8px;
+    right:8px;
+    width:31px;
+    height:31px;
+  }
+}
+
+/* ===== Auth screen ===== */
+.auth-screen{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+.auth-card{width:100%;max-width:380px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:28px;padding:34px 28px;box-shadow:0 10px 35px rgba(0,0,0,.08);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:center}
+.auth-card h1{font-size:26px;font-weight:700;letter-spacing:-.03em;margin:0 0 6px}
+.auth-card p.auth-sub{margin:0 0 22px;color:#7b7b80;font-size:14px}
+.auth-field{display:block;width:100%;border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:13px;padding:13px 14px;font-size:16px;font-family:inherit;margin-bottom:10px}
+.auth-field:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.15)}
+.auth-submit{width:100%;border:0;border-radius:16px;padding:14px;background:#111;color:#fff;font-size:16px;font-weight:650;cursor:pointer;margin-top:4px;transition:transform .16s ease,opacity .16s ease}
+.auth-submit:active{transform:scale(.98)}
+.auth-submit:disabled{opacity:.55;cursor:default;transform:none}
+.auth-toggle{display:block;width:100%;border:0;background:none;color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;padding:14px 0 0;font-family:inherit}
+.auth-error{min-height:18px;color:#d3242f;font-size:13px;font-weight:600;margin:10px 0 0}
+.sign-out-btn{position:fixed;top:16px;right:16px;z-index:50;border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#6c6c72;font-size:13px;font-weight:650;font-family:inherit;padding:9px 15px;border-radius:999px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.06)}
+.sign-out-btn:active{transform:scale(.95)}
+@media(max-width:600px){
+  .auth-card{padding:28px 22px;border-radius:22px}
+  .sign-out-btn{top:10px;right:10px;font-size:12px;padding:7px 12px}
+}
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <h1>Image &amp; Video Upload</h1>
+    <p class="auth-sub">Sign in to see your private gallery</p>
+    <form id="authForm">
+      <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email" required>
+      <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password" minlength="6" required>
+      <button class="auth-submit" id="authSubmitBtn" type="submit">Sign In</button>
+    </form>
+    <p class="auth-error" id="authError"></p>
+    <button class="auth-toggle" id="authToggleBtn" type="button">Need an account? Sign up</button>
+  </div>
+</div>
+
+<button class="sign-out-btn" id="signOutBtn" type="button" hidden>Sign Out</button>
+
+<div class="container" id="mainContainer" style="display:none">
+  <header>
+    <h1>Image &amp; Video Upload</h1>
+    <p>Select photos and videos from your device</p>
+  </header>
+
+  <div class="upload-area">
+    <input id="imageInput" type="file" accept="image/*" multiple hidden>
+    <input id="videoInput" type="file" accept="video/*" multiple hidden>
+
+    <div class="upload-buttons">
+      <button class="upload-btn" id="chooseImages" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Choose Photos
+      </button>
+      <button class="upload-btn video" id="chooseVideos" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
+        Choose Videos
+      </button>
+    </div>
+
+    <span class="count-label" id="countLabel"></span>
+
+    <div class="actions">
+      <button class="action-btn" id="previewImages" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Preview Images
+      </button>
+      <button class="action-btn video" id="previewVideos" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
+        Preview Videos
+      </button>
+      <button class="action-btn" id="previewFavorites" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Preview Favorite
+      </button>
+      <button class="clear-btn" id="clearAll" type="button" hidden>Clear All</button>
+    </div>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <p>No photos or videos yet</p>
+  </div>
+
+  <section class="media-section" id="imageSection">
+    <h2>Images</h2>
+    <div class="gallery" id="imageGallery"></div>
+  </section>
+
+  <section class="media-section" id="videoSection">
+    <h2>Videos</h2>
+    <div class="gallery" id="videoGallery"></div>
+  </section>
+</div>
+
+<!-- Preview page -->
+<div class="preview-overlay" id="previewOverlay" aria-modal="true" role="dialog">
+  <div class="preview-header">
+    <h2 id="previewTitle">Preview</h2>
+    <button class="done-btn" id="donePreview" type="button">Done</button>
+  </div>
+  <div id="previewGrid"></div>
+</div>
+
+<!-- Large viewer -->
+<div class="viewer" id="viewer" aria-modal="true" role="dialog">
+  <div class="viewer-inner" id="viewerInner">
+    <img id="viewerImage" alt="Preview" draggable="false">
+    <div id="viewerVideoHolder"></div>
+    <div class="viewer-heart" id="viewerHeart" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </div>
+    <button class="viewer-close" id="closeViewer" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+'use strict';
+
+/* ====== FILL THESE TWO IN — Project Settings -> API in your Supabase dashboard ====== */
+var SUPABASE_URL='https://wmeqestdjoglofnlnvzw.supabase.co/rest/v1/';
+var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtZXFlc3Rkam9nbG9mbmxudnp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5Mjk1MzQsImV4cCI6MjEwNDUwNTUzNH0.uNS8sJgj37tR_Vy55XgCyp8zfPL1plxsz0qHrGUhicE';
+/* ===================================================================================== */
+
+var sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+var BUCKET='media';
+var currentUser=null;
+
+var MAX_VIDEO_SIZE=80*1024*1024;
+var items=[];
+var previewMode='';
+var viewerIndex=-1;
+var viewerList=[];
+var viewerPos=-1;
+var touchX=0,touchY=0,touchTime=0;
+
+var imageInput=document.getElementById('imageInput');
+var videoInput=document.getElementById('videoInput');
+var chooseImages=document.getElementById('chooseImages');
+var chooseVideos=document.getElementById('chooseVideos');
+var imageGallery=document.getElementById('imageGallery');
+var videoGallery=document.getElementById('videoGallery');
+var imageSection=document.getElementById('imageSection');
+var videoSection=document.getElementById('videoSection');
+var emptyState=document.getElementById('emptyState');
+var countLabel=document.getElementById('countLabel');
+var previewImages=document.getElementById('previewImages');
+var previewVideos=document.getElementById('previewVideos');
+var previewFavorites=document.getElementById('previewFavorites');
+var clearAll=document.getElementById('clearAll');
+var mainContainer=document.getElementById('mainContainer');
+var previewOverlay=document.getElementById('previewOverlay');
+var previewGrid=document.getElementById('previewGrid');
+var previewTitle=document.getElementById('previewTitle');
+var donePreview=document.getElementById('donePreview');
+var viewer=document.getElementById('viewer');
+var viewerInner=document.getElementById('viewerInner');
+var viewerImage=document.getElementById('viewerImage');
+var viewerVideoHolder=document.getElementById('viewerVideoHolder');
+var viewerHeart=document.getElementById('viewerHeart');
+var closeViewer=document.getElementById('closeViewer');
+var authScreen=document.getElementById('authScreen');
+var authForm=document.getElementById('authForm');
+var authEmail=document.getElementById('authEmail');
+var authPassword=document.getElementById('authPassword');
+var authSubmitBtn=document.getElementById('authSubmitBtn');
+var authError=document.getElementById('authError');
+var authToggleBtn=document.getElementById('authToggleBtn');
+var signOutBtn=document.getElementById('signOutBtn');
+
+function isVideo(item){return !!(item && item.type==='video')}
+function isImage(item){return !!(item && item.type==='image')}
+function videoFile(file){return file && file.type && file.type.indexOf('video/')===0}
+function formatMB(bytes){return (bytes/(1024*1024)).toFixed(1)}
+function getURL(item){if(!item.url)item.url=URL.createObjectURL(item.blob);return item.url}
+
+/* ---------- small helpers ---------- */
+function withTimeout(promise,ms,message){
+  return new Promise(function(resolve,reject){
+    var done=false;
+    var timer=setTimeout(function(){
+      if(done)return;done=true;
+      reject(new Error(message||'Request timed out. Please try again.'));
+    },ms);
+    promise.then(
+      function(v){if(done)return;done=true;clearTimeout(timer);resolve(v)},
+      function(e){if(done)return;done=true;clearTimeout(timer);reject(e)}
+    );
+  });
+}
+function safeExt(name){
+  var m=/\.[a-zA-Z0-9]{1,5}$/.exec(name||'');
+  return m?m[0]:'';
+}
+function newFileId(){
+  return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(16).slice(2));
+}
+function setEmptyStateText(text){
+  var p=emptyState.querySelector('p');
+  if(p)p.textContent=text;
+}
+
+/* ---------- cloud persistence (Supabase Storage + Database) ---------- */
+async function cloudPut(item){
+  var path=currentUser.id+'/'+newFileId()+safeExt(item.name);
+  var up=await sb.storage.from(BUCKET).upload(path,item.blob,{contentType:item.blob.type||undefined});
+  if(up.error)throw up.error;
+  var ins=await sb.from('media_items').insert({
+    user_id:currentUser.id,type:item.type,name:item.name||null,
+    favorite:false,storage_path:path
+  }).select().single();
+  if(ins.error)throw ins.error;
+  item.id=ins.data.id;
+  item.storagePath=path;
+}
+async function cloudSetFavorite(item){
+  return sb.from('media_items').update({favorite:!!item.favorite}).eq('id',item.id);
+}
+async function cloudDelete(item){
+  if(item.storagePath)await sb.storage.from(BUCKET).remove([item.storagePath]);
+  if(typeof item.id==='number')await sb.from('media_items').delete().eq('id',item.id);
+}
+async function cloudClearAll(){
+  var paths=items.map(function(x){return x.storagePath}).filter(Boolean);
+  if(paths.length)await sb.storage.from(BUCKET).remove(paths);
+  if(currentUser)await sb.from('media_items').delete().eq('user_id',currentUser.id);
+}
+async function loadFromCloud(){
+  setEmptyStateText('Loading your gallery…');
+  emptyState.style.display='block';
+  try{
+    var res=await sb.from('media_items').select('*').eq('user_id',currentUser.id).order('id',{ascending:true});
+    if(res.error)throw res.error;
+    var rows=res.data||[];
+    var loaded=[];
+    for(var i=0;i<rows.length;i++){
+      var row=rows[i];
+      var signed=await sb.storage.from(BUCKET).createSignedUrl(row.storage_path,6*60*60);
+      if(signed.error){console.error(signed.error);continue}
+      loaded.push({id:row.id,type:row.type,blob:null,name:row.name,favorite:!!row.favorite,storagePath:row.storage_path,url:signed.data.signedUrl,thumbnail:''});
+    }
+    items=loaded;
+    setEmptyStateText('No photos or videos yet');
+  }catch(err){
+    console.error('Cloud load error:',err);
+    setEmptyStateText("Couldn't load your gallery. Please refresh, or double-check your Supabase table/policies.");
+  }
+  rebuildMain();
+}
+
+/* ---------- auth ---------- */
+var authMode='signin';
+function setAuthMode(mode){
+  authMode=mode;
+  authSubmitBtn.textContent=mode==='signin'?'Sign In':'Sign Up';
+  authToggleBtn.textContent=mode==='signin'?'Need an account? Sign up':'Have an account? Sign in';
+  authError.textContent='';
+}
+authToggleBtn.addEventListener('click',function(){setAuthMode(authMode==='signin'?'signup':'signin')});
+
+authForm.addEventListener('submit',async function(e){
+  e.preventDefault();
+  var email=authEmail.value.trim();
+  var password=authPassword.value;
+  authError.textContent='';
+  authSubmitBtn.disabled=true;
+  authSubmitBtn.textContent='Please wait…';
+  try{
+    var call=authMode==='signin'
+      ?sb.auth.signInWithPassword({email:email,password:password})
+      :sb.auth.signUp({email:email,password:password});
+    var res=await withTimeout(call,15000,'This is taking too long. Please refresh the page and try again.');
+    if(res.error)throw res.error;
+    if(authMode==='signup'&&res.data&&res.data.user&&!res.data.session){
+      authError.textContent='Check your email to confirm your account, then sign in.';
+      setAuthMode('signin');
+    }
+    authPassword.value='';
+  }catch(err){
+    authError.textContent=(err&&err.message)?err.message:'Something went wrong. Please try again.';
+  }finally{
+    authSubmitBtn.disabled=false;
+    authSubmitBtn.textContent=authMode==='signin'?'Sign In':'Sign Up';
+  }
+});
+
+signOutBtn.addEventListener('click',async function(){
+  signOutBtn.disabled=true;
+  try{await withTimeout(sb.auth.signOut(),10000,'Sign out is taking too long.')}
+  catch(err){console.error(err)}
+  signOutBtn.disabled=false;
+});
+
+function handleSession(session){
+  if(session&&session.user){
+    currentUser=session.user;
+    authScreen.style.display='none';
+    mainContainer.style.display='';
+    signOutBtn.hidden=false;
+    loadFromCloud();
+  }else{
+    currentUser=null;
+    authScreen.style.display='flex';
+    mainContainer.style.display='none';
+    signOutBtn.hidden=true;
+    items.forEach(function(x){if(x.url)URL.revokeObjectURL(x.url)});
+    items=[];
+    closeViewerNow();closePreview();
+    imageGallery.innerHTML='';videoGallery.innerHTML='';
+  }
+}
+sb.auth.onAuthStateChange(function(event,session){handleSession(session)});
+sb.auth.getSession().then(function(res){handleSession(res.data.session)});
+
+function heartSVG(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+}
+function makeHeartButton(item){
+  var b=document.createElement('button');
+  b.type='button';b.className='favorite-btn';
+  b.innerHTML=heartSVG();
+  b.classList.toggle('active',item.favorite);
+  b.setAttribute('aria-label','Toggle favorite');
+  b.addEventListener('click',function(e){e.stopPropagation();toggleFavorite(item.id)});
+  return b;
+}
+function makeDeleteButton(item){
+  var b=document.createElement('button');
+  b.type='button';b.className='delete-btn';
+  b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  b.setAttribute('aria-label','Delete');
+  b.addEventListener('click',function(e){e.stopPropagation();removeItem(item.id)});
+  return b;
+}
+function playBadge(){
+  var d=document.createElement('div');d.className='play-badge';
+  d.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  return d;
+}
+
+/* Create a real thumbnail from the video's first usable frame.
+   This prevents the preview grid from being nothing but black boxes. */
+function makeVideoThumbnail(item){
+  if(item.thumbnail)return Promise.resolve(item.thumbnail);
+  return new Promise(function(resolve){
+    var v=document.createElement('video');
+    var url=getURL(item);
+    var done=false;
+    function finish(value){if(done)return;done=true;v.removeAttribute('src');v.load();resolve(value||'')}
+    v.muted=true;v.playsInline=true;v.preload='metadata';v.src=url;
+    v.addEventListener('loadeddata',function(){
+      try{
+        var c=document.createElement('canvas');
+        var w=v.videoWidth||640,h=v.videoHeight||360;
+        var max=960,scale=Math.min(1,max/w);
+        c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));
+        c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+        item.thumbnail=c.toDataURL('image/jpeg',.82);
+        finish(item.thumbnail);
+      }catch(e){finish('')}
+    },{once:true});
+    v.addEventListener('error',function(){finish('')},{once:true});
+    setTimeout(function(){finish(item.thumbnail||'')},3500);
+  });
+}
+
+function createMainCard(item,index){
+  var card=document.createElement('div');
+  card.className='card '+(isVideo(item)?'video-card':'image-card');
+  card.dataset.id=item.id;
+  card.style.animationDelay=(Math.min(index,12)*.03)+'s';
+
+  if(isImage(item)){
+    var img=document.createElement('img');img.src=getURL(item);img.alt=item.name||'Uploaded image';img.draggable=false;
+    card.appendChild(img);
+    imageGallery.appendChild(card);
+  }else{
+    var v=document.createElement('video');v.src=getURL(item);v.muted=true;v.playsInline=true;v.preload='metadata';
+    card.appendChild(v);card.appendChild(playBadge());
+    videoGallery.appendChild(card);
+    makeVideoThumbnail(item).then(function(src){if(src){card.style.backgroundImage='url("'+src+'")';card.style.backgroundSize='cover';card.style.backgroundPosition='center'}});
+  }
+  card.appendChild(makeHeartButton(item));
+  card.appendChild(makeDeleteButton(item));
+}
+
+function rebuildMain(){
+  imageGallery.innerHTML='';videoGallery.innerHTML='';
+  items.forEach(function(item,i){createMainCard(item,i)});
+  updateUI();
+}
+function updateUI(){
+  var count=items.length;
+  var imageCount=items.filter(isImage).length;
+  var videoCount=items.filter(isVideo).length;
+  var favCount=items.filter(function(x){return x.favorite}).length;
+  emptyState.style.display=count?'none':'block';
+  imageSection.classList.toggle('show',imageCount>0);
+  videoSection.classList.toggle('show',videoCount>0);
+  countLabel.textContent=count?(count+' '+(count===1?'item':'items')+' selected'):'';
+  previewImages.hidden=imageCount===0;
+  previewVideos.hidden=videoCount===0;
+  previewFavorites.hidden=favCount===0;
+  clearAll.hidden=count===0;
+}
+
+function toggleFavorite(id){
+  var item=items.find(function(x){return x.id===id});
+  if(!item)return;
+  item.favorite=!item.favorite;
+  cloudSetFavorite(item).catch(console.error);
+  rebuildMain();
+  if(previewOverlay.classList.contains('open'))renderPreview(previewMode);
+  if(viewer.classList.contains('open')&&viewerIndex!==-1){viewerHeart.style.display=item.favorite?'flex':'none'}
+}
+
+function removeItem(id){
+  var index=items.findIndex(function(x){return x.id===id});
+  if(index<0)return;
+  var item=items[index];
+  if(viewerIndex!==-1&&items[viewerIndex]&&items[viewerIndex].id===id)closeViewerNow();
+  items.splice(index,1);
+  if(item.url)URL.revokeObjectURL(item.url);
+  cloudDelete(item).catch(console.error);
+  rebuildMain();
+  if(previewOverlay.classList.contains('open')){
+    if(!items.length)closePreview();else renderPreview(previewMode);
+  }
+}
+
+function getPreviewIndices(mode){
+  var result=[];
+  items.forEach(function(item,index){
+    var ok=mode==='images'?isImage(item):mode==='videos'?isVideo(item):item.favorite;
+    if(ok)result.push(index);
+  });
+  return result;
+}
+
+function renderPreview(mode){
+  previewGrid.innerHTML='';
+  previewGrid.className='';
+  var shown=getPreviewIndices(mode).map(function(index){return {item:items[index],index:index}});
+
+  if(mode==='images')previewGrid.className='preview-images-grid';
+  else if(mode==='videos')previewGrid.className='preview-videos-grid';
+  else previewGrid.className='preview-favorites-grid';
+
+  if(!shown.length){
+    var empty=document.createElement('div');empty.className='preview-empty';
+    empty.innerHTML='<div class="big">'+(mode==='videos'?'▶':mode==='images'?'▧':'♡')+'</div><div>No '+(mode==='videos'?'videos':mode==='images'?'images':'favorite items')+' yet</div>';
+    previewGrid.appendChild(empty);return;
+  }
+
+  shown.forEach(function(entry){
+    var item=entry.item,index=entry.index;
+    var card=document.createElement('div');card.dataset.id=item.id;
+    card.className='preview-card '+(isVideo(item)?'video':'image');
+    if(isImage(item)){
+      var img=document.createElement('img');img.src=getURL(item);img.alt=item.name||'Image';img.draggable=false;
+      card.appendChild(img);
+    }else{
+      var v=document.createElement('video');v.src=getURL(item);v.muted=true;v.playsInline=true;v.preload='metadata';v.setAttribute('aria-label',item.name||'Video');
+      card.appendChild(v);card.appendChild(playBadge());
+      makeVideoThumbnail(item).then(function(src){if(src){card.style.backgroundImage='url("'+src+'")';card.style.backgroundSize='cover';card.style.backgroundPosition='center'}});
+    }
+    if(item.favorite){
+      var heart=document.createElement('div');heart.className='preview-heart';heart.innerHTML=heartSVG();card.appendChild(heart);
+    }
+    card.addEventListener('click',function(){openViewer(index,mode)});
+    previewGrid.appendChild(card);
+  });
+}
+
+function openPreview(mode){
+  if(mode==='images'&&!items.some(isImage))return;
+  if(mode==='videos'&&!items.some(isVideo))return;
+  if(mode==='favorites'&&!items.some(function(x){return x.favorite}))return;
+  previewMode=mode;
+  previewTitle.textContent=mode==='images'?'Preview Images':mode==='videos'?'Preview Videos':'Preview Favorite';
+  renderPreview(mode);
+  previewOverlay.classList.add('open');
+  previewOverlay.scrollTop=0;
+  document.body.style.overflow='hidden';
+  if('inert' in mainContainer)mainContainer.inert=true;
+  donePreview.focus();
+}
+function closePreview(){
+  previewOverlay.classList.remove('open');
+  document.body.style.overflow='';
+  if('inert' in mainContainer)mainContainer.inert=false;
+  previewMode='';
+}
+
+function clearViewerMedia(){
+  viewerImage.style.display='none';viewerImage.removeAttribute('src');
+  while(viewerVideoHolder.firstChild){
+    var old=viewerVideoHolder.firstChild;
+    if(old.pause)old.pause();
+    viewerVideoHolder.removeChild(old);
+  }
+}
+function openViewer(index,mode){
+  if(index<0||index>=items.length)return;
+  mode=mode||previewMode;
+  viewerList=getPreviewIndices(mode);
+  viewerPos=viewerList.indexOf(index);
+  if(viewerPos===-1)return;
+  viewerIndex=index;
+  var item=items[index];
+  clearViewerMedia();
+  viewerHeart.style.display=item.favorite?'flex':'none';
+  if(isImage(item)){
+    viewerImage.src=getURL(item);viewerImage.style.display='block';
+  }else{
+    var v=document.createElement('video');v.src=getURL(item);v.controls=true;v.playsInline=true;v.preload='metadata';v.autoplay=false;
+    viewerVideoHolder.className='viewer-video-holder';viewerVideoHolder.appendChild(v);
+  }
+  viewer.classList.add('open');
+  closeViewer.focus();
+}
+function openViewerById(id){
+  var index=items.findIndex(function(x){return x.id===id});
+  if(index!==-1)openViewer(index);
+}
+function closeViewerNow(){
+  viewer.classList.remove('open');
+  clearViewerMedia();
+  viewerIndex=-1;
+  viewerList=[];
+  viewerPos=-1;
+}
+function closeViewerSafe(){closeViewerNow()}
+function changeViewer(direction){
+  if(viewerIndex===-1||viewerPos===-1||!viewerList.length)return;
+  var nextPos=viewerPos+direction;
+  if(nextPos<0||nextPos>=viewerList.length)return;
+  var nextIndex=viewerList[nextPos];
+  viewerInner.classList.remove('swipe-left','swipe-right');
+  void viewerInner.offsetWidth;
+  viewerInner.classList.add(direction>0?'swipe-left':'swipe-right');
+  openViewer(nextIndex,previewMode);
+}
+
+viewer.addEventListener('touchstart',function(e){
+  if(!viewer.classList.contains('open')||e.touches.length!==1)return;
+  if(e.target.closest && (e.target.closest('video')||e.target.closest('button')))return;
+  touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;touchTime=Date.now();
+},{passive:true});
+viewer.addEventListener('touchend',function(e){
+  if(!viewer.classList.contains('open')||e.changedTouches.length!==1)return;
+  if(e.target.closest && (e.target.closest('video')||e.target.closest('button')))return;
+  var dx=e.changedTouches[0].clientX-touchX;
+  var dy=e.changedTouches[0].clientY-touchY;
+  var elapsed=Date.now()-touchTime;
+  if(Math.abs(dx)>Math.abs(dy)*1.25&&Math.abs(dx)>=55&&elapsed<=700)changeViewer(dx<0?1:-1);
+  touchX=touchY=touchTime=0;
+},{passive:true});
+
+document.addEventListener('keydown',function(e){
+  if(viewer.classList.contains('open')){
+    if(e.key==='ArrowLeft'){e.preventDefault();changeViewer(-1)}
+    else if(e.key==='ArrowRight'){e.preventDefault();changeViewer(1)}
+    else if(e.key==='Escape'){e.preventDefault();closeViewerSafe()}
+  }else if(previewOverlay.classList.contains('open')&&e.key==='Escape')closePreview();
+});
+
+viewer.addEventListener('click',function(e){if(e.target===viewer)closeViewerSafe()});
+viewerInner.addEventListener('click',function(e){e.stopPropagation()});
+closeViewer.addEventListener('click',closeViewerSafe);
+chooseImages.addEventListener('click',function(){imageInput.click()});
+chooseVideos.addEventListener('click',function(){videoInput.click()});
+previewImages.addEventListener('click',function(){openPreview('images')});
+previewVideos.addEventListener('click',function(){openPreview('videos')});
+previewFavorites.addEventListener('click',function(){openPreview('favorites')});
+donePreview.addEventListener('click',closePreview);
+
+async function addFiles(files,type){
+  var batch=[];
+  for(var i=0;i<files.length;i++){
+    var file=files[i];
+    if(type==='video'&&file.size>MAX_VIDEO_SIZE){
+      alert('Video is too large. Maximum size is 80 MB.\nSelected: '+formatMB(file.size)+' MB');
+      continue;
+    }
+    var item={id:'tmp-'+newFileId(),type:type,blob:file,name:file.name,favorite:false,url:URL.createObjectURL(file),thumbnail:''};
+    items.push(item);
+    batch.push(item);
+  }
+  rebuildMain();
+  for(var j=0;j<batch.length;j++){
+    try{
+      await cloudPut(batch[j]);
+    }catch(err){
+      console.error(err);
+      alert('Upload failed for "'+(batch[j].name||'file')+'": '+(err&&err.message?err.message:err));
+      var idx=items.indexOf(batch[j]);
+      if(idx!==-1)items.splice(idx,1);
+      if(batch[j].url)URL.revokeObjectURL(batch[j].url);
+    }
+  }
+  rebuildMain();
+}
+imageInput.addEventListener('change',function(e){addFiles(Array.prototype.slice.call(e.target.files||[]),'image');imageInput.value=''});
+videoInput.addEventListener('change',function(e){addFiles(Array.prototype.slice.call(e.target.files||[]),'video');videoInput.value=''});
+
+clearAll.addEventListener('click',async function(){
+  items.forEach(function(x){if(x.url)URL.revokeObjectURL(x.url)});
+  items=[];imageGallery.innerHTML='';videoGallery.innerHTML='';
+  closeViewerNow();closePreview();
+  try{await cloudClearAll()}catch(err){console.error(err)}
+  updateUI();
+});
+
+})();
+</script>
+</body>
+</html>
