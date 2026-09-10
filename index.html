@@ -64,9 +64,9 @@ header p{margin:0;color:var(--muted);font-size:16px}
 .preview-header h2{font-size:21px;margin:0}
 .done-btn{border:0;background:none;color:var(--blue);font-size:17px;font-weight:650;cursor:pointer}
 
-/* Images = masonry */
-.preview-images-grid{column-width:240px;column-gap:20px;padding:24px}
-.preview-images-grid .preview-card{break-inside:avoid;-webkit-column-break-inside:avoid;margin:0 0 20px;position:relative;border-radius:17px;overflow:hidden;box-shadow:var(--shadow);background:#ddd;cursor:pointer}
+/* Images = JS-computed masonry (absolute positioned once each image's size is known) */
+.preview-images-grid{position:relative;padding:24px;transition:opacity .2s ease}
+.preview-images-grid .preview-card{position:absolute;top:0;left:0;border-radius:17px;overflow:hidden;box-shadow:var(--shadow);background:#ddd;cursor:pointer}
 .preview-images-grid img{display:block;width:100%;height:auto}
 
 /* Videos = real grid, never columns */
@@ -113,8 +113,6 @@ header p{margin:0;color:var(--muted);font-size:16px}
   .media-section{margin-top:30px}
   .media-section h2{font-size:22px}
   .preview-header{height:62px;padding:0 16px}
-  .preview-images-grid{column-width:160px;column-gap:12px;padding:16px}
-  .preview-images-grid .preview-card{margin-bottom:12px}
   .preview-videos-grid{grid-template-columns:1fr 1fr;gap:12px;padding:16px}
   .preview-favorites-grid{grid-template-columns:1fr 1fr;gap:12px;padding:16px}
   .viewer{padding:14px}
@@ -200,19 +198,15 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 .done-btn:active{transform:scale(.95)}
 .done-btn:hover{background:rgba(0,0,0,.09)}
 .preview-images-grid{
-  column-width:250px;
-  column-gap:18px;
   padding:24px 26px 50px;
   max-width:1500px;
   margin:0 auto;
 }
 .preview-images-grid .preview-card{
-  margin:0 0 18px;
   border-radius:18px;
   box-shadow:0 6px 22px rgba(0,0,0,.075);
   background:#e9e9eb;
-  transform:translateZ(0);
-  transition:transform .22s ease,box-shadow .22s ease;
+  transition:transform .22s ease,box-shadow .22s ease,left .22s ease,top .22s ease;
 }
 .preview-images-grid .preview-card:hover{
   transform:translateY(-3px);
@@ -254,12 +248,9 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
     border-radius:11px;
   }
   .preview-images-grid{
-    column-width:160px;
-    column-gap:11px;
     padding:14px 12px 34px;
   }
   .preview-images-grid .preview-card{
-    margin-bottom:11px;
     border-radius:15px;
     box-shadow:0 5px 17px rgba(0,0,0,.075);
   }
@@ -283,86 +274,98 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 .auth-submit:disabled{opacity:.55;cursor:default;transform:none}
 .auth-toggle{display:block;width:100%;border:0;background:none;color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;padding:14px 0 0;font-family:inherit}
 .auth-error{min-height:18px;color:#d3242f;font-size:13px;font-weight:600;margin:10px 0 0}
-.sign-out-btn{position:fixed;top:16px;right:16px;z-index:50;border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#6c6c72;font-size:13px;font-weight:650;font-family:inherit;padding:9px 15px;border-radius:999px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.06)}
-.sign-out-btn:active{transform:scale(.95)}
+.sign-out-btn,.login-btn{position:fixed;top:16px;right:16px;z-index:50;border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#6c6c72;font-size:13px;font-weight:650;font-family:inherit;padding:9px 15px;border-radius:999px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.06)}
+.sign-out-btn:active,.login-btn:active{transform:scale(.95)}
+.auth-modal{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.auth-modal[hidden]{display:none}
+.auth-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:#444;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.auth-close svg{width:14px;height:14px}
 @media(max-width:600px){
   .auth-card{padding:28px 22px;border-radius:22px}
-  .sign-out-btn{top:10px;right:10px;font-size:12px;padding:7px 12px}
+  .sign-out-btn,.login-btn{top:10px;right:10px;font-size:12px;padding:7px 12px}
 }
 </style>
 </head>
 <body>
 
-<div class="auth-screen" id="authScreen">
+<button class="login-btn" id="loginBtn" type="button" hidden>Login</button>
+<button class="sign-out-btn" id="signOutBtn" type="button" hidden>Sign Out</button>
+
+<div class="auth-modal" id="authModal" hidden>
   <div class="auth-card">
-    <h1>Image &amp; Video Upload</h1>
-    <p class="auth-sub">Sign in to see your private gallery</p>
+    <button class="auth-close" id="authClose" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h1>Admin Login</h1>
+    <p class="auth-sub">Sign in to manage this gallery</p>
     <form id="authForm">
       <input class="auth-field" id="authEmail" type="email" placeholder="Email" autocomplete="email" required>
-      <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password" minlength="6" required>
+      <input class="auth-field" id="authPassword" type="password" placeholder="Password" autocomplete="current-password" required>
       <button class="auth-submit" id="authSubmitBtn" type="submit">Sign In</button>
     </form>
     <p class="auth-error" id="authError"></p>
-    <button class="auth-toggle" id="authToggleBtn" type="button">Need an account? Sign up</button>
   </div>
 </div>
 
-<button class="sign-out-btn" id="signOutBtn" type="button" hidden>Sign Out</button>
-
-<div class="container" id="mainContainer" style="display:none">
+<div class="container" id="mainContainer">
   <header>
-    <h1>Image &amp; Video Upload</h1>
-    <p>Select photos and videos from your device</p>
+    <h1 id="pageTitle">The One Piece</h1>
+    <p id="pageSubtitle">Take a look at this treasure</p>
   </header>
 
-  <div class="upload-area">
-    <input id="imageInput" type="file" accept="image/*" multiple hidden>
-    <input id="videoInput" type="file" accept="video/*" multiple hidden>
+  <div id="adminOnly" hidden>
+    <div class="upload-area">
+      <input id="imageInput" type="file" accept="image/*" multiple hidden>
+      <input id="videoInput" type="file" accept="video/*" multiple hidden>
 
-    <div class="upload-buttons">
-      <button class="upload-btn" id="chooseImages" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Choose Photos
-      </button>
-      <button class="upload-btn video" id="chooseVideos" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
-        Choose Videos
-      </button>
+      <div class="upload-buttons">
+        <button class="upload-btn" id="chooseImages" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Choose Photos
+        </button>
+        <button class="upload-btn video" id="chooseVideos" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
+          Choose Videos
+        </button>
+      </div>
+
+      <span class="count-label" id="countLabel"></span>
+
+      <div class="actions">
+        <button class="action-btn" id="previewFavorites" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Preview Favorite
+        </button>
+        <button class="clear-btn" id="clearAll" type="button" hidden>Clear All</button>
+      </div>
     </div>
 
-    <span class="count-label" id="countLabel"></span>
-
-    <div class="actions">
-      <button class="action-btn" id="previewImages" type="button" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Preview Images
-      </button>
-      <button class="action-btn video" id="previewVideos" type="button" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
-        Preview Videos
-      </button>
-      <button class="action-btn" id="previewFavorites" type="button" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        Preview Favorite
-      </button>
-      <button class="clear-btn" id="clearAll" type="button" hidden>Clear All</button>
+    <div class="empty-state" id="emptyState">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <p>No photos or videos yet</p>
     </div>
+
+    <section class="media-section" id="imageSection">
+      <h2>Images</h2>
+      <div class="gallery" id="imageGallery"></div>
+    </section>
+
+    <section class="media-section" id="videoSection">
+      <h2>Videos</h2>
+      <div class="gallery" id="videoGallery"></div>
+    </section>
   </div>
 
-  <div class="empty-state" id="emptyState">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    <p>No photos or videos yet</p>
+  <div class="actions" id="publicActions">
+    <button class="action-btn" id="previewImages" type="button" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Preview Images
+    </button>
+    <button class="action-btn video" id="previewVideos" type="button" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
+      Preview Videos
+    </button>
   </div>
-
-  <section class="media-section" id="imageSection">
-    <h2>Images</h2>
-    <div class="gallery" id="imageGallery"></div>
-  </section>
-
-  <section class="media-section" id="videoSection">
-    <h2>Videos</h2>
-    <div class="gallery" id="videoGallery"></div>
-  </section>
 </div>
 
 <!-- Preview page -->
@@ -396,7 +399,6 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 /* ====== FILL THESE TWO IN — Project Settings -> API in your Supabase dashboard ====== */
 var SUPABASE_URL='https://wmeqestdjoglofnlnvzw.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtZXFlc3Rkam9nbG9mbmxudnp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5Mjk1MzQsImV4cCI6MjEwNDUwNTUzNH0.uNS8sJgj37tR_Vy55XgCyp8zfPL1plxsz0qHrGUhicE';
-
 /* ===================================================================================== */
 
 var sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
@@ -436,14 +438,16 @@ var viewerImage=document.getElementById('viewerImage');
 var viewerVideoHolder=document.getElementById('viewerVideoHolder');
 var viewerHeart=document.getElementById('viewerHeart');
 var closeViewer=document.getElementById('closeViewer');
-var authScreen=document.getElementById('authScreen');
+var authModal=document.getElementById('authModal');
+var authClose=document.getElementById('authClose');
 var authForm=document.getElementById('authForm');
 var authEmail=document.getElementById('authEmail');
 var authPassword=document.getElementById('authPassword');
 var authSubmitBtn=document.getElementById('authSubmitBtn');
 var authError=document.getElementById('authError');
-var authToggleBtn=document.getElementById('authToggleBtn');
+var loginBtn=document.getElementById('loginBtn');
 var signOutBtn=document.getElementById('signOutBtn');
+var adminOnly=document.getElementById('adminOnly');
 
 function isVideo(item){return !!(item && item.type==='video')}
 function isImage(item){return !!(item && item.type==='image')}
@@ -486,7 +490,10 @@ async function cloudPut(item){
     user_id:currentUser.id,type:item.type,name:item.name||null,
     favorite:false,storage_path:path
   }).select().single();
-  if(ins.error)throw ins.error;
+  if(ins.error){
+    sb.storage.from(BUCKET).remove([path]).catch(function(){});
+    throw ins.error;
+  }
   item.id=ins.data.id;
   item.storagePath=path;
 }
@@ -502,11 +509,11 @@ async function cloudClearAll(){
   if(paths.length)await sb.storage.from(BUCKET).remove(paths);
   if(currentUser)await sb.from('media_items').delete().eq('user_id',currentUser.id);
 }
-async function loadFromCloud(){
+async function loadGallery(){
   setEmptyStateText('Loading your gallery…');
   emptyState.style.display='block';
   try{
-    var res=await sb.from('media_items').select('*').eq('user_id',currentUser.id).order('id',{ascending:true});
+    var res=await sb.from('media_items').select('*').order('id',{ascending:true});
     if(res.error)throw res.error;
     var rows=res.data||[];
     var loaded=[];
@@ -520,20 +527,17 @@ async function loadFromCloud(){
     setEmptyStateText('No photos or videos yet');
   }catch(err){
     console.error('Cloud load error:',err);
-    setEmptyStateText("Couldn't load your gallery. Please refresh, or double-check your Supabase table/policies.");
+    setEmptyStateText("Couldn't load the gallery. Please refresh the page.");
   }
   rebuildMain();
 }
 
-/* ---------- auth ---------- */
-var authMode='signin';
-function setAuthMode(mode){
-  authMode=mode;
-  authSubmitBtn.textContent=mode==='signin'?'Sign In':'Sign Up';
-  authToggleBtn.textContent=mode==='signin'?'Need an account? Sign up':'Have an account? Sign in';
-  authError.textContent='';
-}
-authToggleBtn.addEventListener('click',function(){setAuthMode(authMode==='signin'?'signup':'signin')});
+/* ---------- auth (admin sign-in only, no public sign-up) ---------- */
+function openAuthModal(){authError.textContent='';authModal.hidden=false;authEmail.focus()}
+function closeAuthModal(){authModal.hidden=true}
+loginBtn.addEventListener('click',openAuthModal);
+authClose.addEventListener('click',closeAuthModal);
+authModal.addEventListener('click',function(e){if(e.target===authModal)closeAuthModal()});
 
 authForm.addEventListener('submit',async function(e){
   e.preventDefault();
@@ -543,21 +547,14 @@ authForm.addEventListener('submit',async function(e){
   authSubmitBtn.disabled=true;
   authSubmitBtn.textContent='Please wait…';
   try{
-    var call=authMode==='signin'
-      ?sb.auth.signInWithPassword({email:email,password:password})
-      :sb.auth.signUp({email:email,password:password});
-    var res=await withTimeout(call,15000,'This is taking too long. Please refresh the page and try again.');
+    var res=await withTimeout(sb.auth.signInWithPassword({email:email,password:password}),15000,'This is taking too long. Please refresh the page and try again.');
     if(res.error)throw res.error;
-    if(authMode==='signup'&&res.data&&res.data.user&&!res.data.session){
-      authError.textContent='Check your email to confirm your account, then sign in.';
-      setAuthMode('signin');
-    }
     authPassword.value='';
   }catch(err){
     authError.textContent=(err&&err.message)?err.message:'Something went wrong. Please try again.';
   }finally{
     authSubmitBtn.disabled=false;
-    authSubmitBtn.textContent=authMode==='signin'?'Sign In':'Sign Up';
+    authSubmitBtn.textContent='Sign In';
   }
 });
 
@@ -571,23 +568,20 @@ signOutBtn.addEventListener('click',async function(){
 function handleSession(session){
   if(session&&session.user){
     currentUser=session.user;
-    authScreen.style.display='none';
-    mainContainer.style.display='';
+    loginBtn.hidden=true;
     signOutBtn.hidden=false;
-    loadFromCloud();
+    adminOnly.hidden=false;
+    closeAuthModal();
   }else{
     currentUser=null;
-    authScreen.style.display='flex';
-    mainContainer.style.display='none';
+    loginBtn.hidden=false;
     signOutBtn.hidden=true;
-    items.forEach(function(x){if(x.url)URL.revokeObjectURL(x.url)});
-    items=[];
+    adminOnly.hidden=true;
     closeViewerNow();closePreview();
-    imageGallery.innerHTML='';videoGallery.innerHTML='';
   }
 }
 sb.auth.onAuthStateChange(function(event,session){handleSession(session)});
-sb.auth.getSession().then(function(res){handleSession(res.data.session)});
+sb.auth.getSession().then(function(res){handleSession(res.data.session);loadGallery()});
 
 function heartSVG(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>';
@@ -717,6 +711,8 @@ function getPreviewIndices(mode){
 function renderPreview(mode){
   previewGrid.innerHTML='';
   previewGrid.className='';
+  previewGrid.style.height='';
+  previewGrid.style.opacity='';
   var shown=getPreviewIndices(mode).map(function(index){return {item:items[index],index:index}});
 
   if(mode==='images')previewGrid.className='preview-images-grid';
@@ -729,6 +725,8 @@ function renderPreview(mode){
     previewGrid.appendChild(empty);return;
   }
 
+  var loadPromises=[];
+
   shown.forEach(function(entry){
     var item=entry.item,index=entry.index;
     var card=document.createElement('div');card.dataset.id=item.id;
@@ -736,6 +734,13 @@ function renderPreview(mode){
     if(isImage(item)){
       var img=document.createElement('img');img.src=getURL(item);img.alt=item.name||'Image';img.draggable=false;
       card.appendChild(img);
+      if(mode==='images'){
+        loadPromises.push(new Promise(function(resolve){
+          if(img.complete&&img.naturalWidth){resolve();return}
+          img.addEventListener('load',resolve,{once:true});
+          img.addEventListener('error',resolve,{once:true});
+        }));
+      }
     }else{
       var v=document.createElement('video');v.src=getURL(item);v.muted=true;v.playsInline=true;v.preload='metadata';v.setAttribute('aria-label',item.name||'Video');
       card.appendChild(v);card.appendChild(playBadge());
@@ -747,7 +752,51 @@ function renderPreview(mode){
     card.addEventListener('click',function(){openViewer(index,mode)});
     previewGrid.appendChild(card);
   });
+
+  if(mode==='images'){
+    previewGrid.style.opacity='0';
+    var safetyTimeout=new Promise(function(resolve){setTimeout(resolve,4000)});
+    Promise.race([Promise.all(loadPromises),safetyTimeout]).then(function(){
+      layoutImagesMasonry();
+      previewGrid.style.opacity='1';
+    });
+  }
 }
+
+function layoutImagesMasonry(){
+  var container=previewGrid;
+  if(!container.classList.contains('preview-images-grid'))return;
+  var cards=Array.prototype.slice.call(container.children).filter(function(el){return el.classList&&el.classList.contains('preview-card')});
+  if(!cards.length)return;
+  var gap=window.innerWidth<=600?11:18;
+  var minColWidth=window.innerWidth<=600?150:240;
+  var containerWidth=container.clientWidth;
+  var colCount=Math.max(1,Math.floor((containerWidth+gap)/(minColWidth+gap)));
+  var colWidth=(containerWidth-(colCount-1)*gap)/colCount;
+  var colHeights=new Array(colCount).fill(0);
+  cards.forEach(function(card){
+    var minCol=0;
+    for(var i=1;i<colCount;i++){if(colHeights[i]<colHeights[minCol])minCol=i}
+    var x=minCol*(colWidth+gap);
+    var y=colHeights[minCol];
+    card.style.width=colWidth+'px';
+    card.style.left=x+'px';
+    card.style.top=y+'px';
+    var h=card.offsetHeight;
+    colHeights[minCol]=y+h+gap;
+  });
+  container.style.height=Math.max.apply(null,colHeights)+'px';
+}
+
+var masonryResizeTimer=null;
+window.addEventListener('resize',function(){
+  if(!previewOverlay.classList.contains('open'))return;
+  if(!previewGrid.classList.contains('preview-images-grid'))return;
+  clearTimeout(masonryResizeTimer);
+  masonryResizeTimer=setTimeout(layoutImagesMasonry,150);
+});
+
+
 
 function openPreview(mode){
   if(mode==='images'&&!items.some(isImage))return;
