@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SFM ONE PIECE — Media Upload & Preview</title>
 <meta name="description" content="SFM ONE PIECE — A media gallery for viewing and managing One Piece photos and videos.">
+<meta property="og:title" content="SFM ONE PIECE">
+<meta property="og:description" content="A media gallery for viewing and managing One Piece photos and videos.">
+<meta property="og:type" content="website">
 <style>
 :root{
   --bg:#f5f5f7;
@@ -526,13 +529,17 @@ async function loadGallery(){
     var res=await sb.from('media_items').select('*').order('id',{ascending:true});
     if(res.error)throw res.error;
     var rows=res.data||[];
+    var results=await Promise.all(rows.map(function(row){
+      return sb.storage.from(BUCKET).createSignedUrl(row.storage_path,6*60*60).then(function(signed){
+        return {row:row,signed:signed};
+      });
+    }));
     var loaded=[];
-    for(var i=0;i<rows.length;i++){
-      var row=rows[i];
-      var signed=await sb.storage.from(BUCKET).createSignedUrl(row.storage_path,6*60*60);
-      if(signed.error){console.error(signed.error);continue}
-      loaded.push({id:row.id,type:row.type,blob:null,name:row.name,favorite:!!row.favorite,storagePath:row.storage_path,url:signed.data.signedUrl,thumbnail:''});
-    }
+    results.forEach(function(r){
+      if(r.signed.error){console.error(r.signed.error);return}
+      var row=r.row;
+      loaded.push({id:row.id,type:row.type,blob:null,name:row.name,favorite:!!row.favorite,storagePath:row.storage_path,url:r.signed.data.signedUrl,thumbnail:''});
+    });
     items=loaded;
     setEmptyStateText('No photos or videos yet');
   }catch(err){
