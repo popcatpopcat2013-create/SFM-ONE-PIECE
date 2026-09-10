@@ -16,6 +16,8 @@
   --muted:#86868b;
   --blue:#0071e3;
   --blue-dark:#005fc4;
+  --gold:#b8860b;
+  --gold-dark:#96690a;
   --shadow:0 3px 14px rgba(0,0,0,.09);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -38,6 +40,16 @@ header p{margin:0;color:var(--muted);font-size:16px}
 .action-btn.video{border-color:#333;color:#333}
 .action-btn:active{transform:scale(.96)}
 .action-btn svg{width:17px;height:17px}
+#publicActions .action-btn{border-color:var(--gold);color:var(--gold-dark)}
+#publicActions .action-btn.video{border-color:var(--gold);color:var(--gold-dark)}
+#publicActions .action-btn:hover{background:#fdf8ef}
+.teaser-strip{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:40px;padding:0 20px;opacity:0;transition:opacity .6s ease}
+.teaser-strip.show{opacity:1}
+.teaser-strip img{width:104px;height:104px;object-fit:cover;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.14);transition:transform .2s ease,filter .25s ease;background:#e5e5e7;filter:blur(3px) saturate(1.05)}
+.teaser-strip img:nth-child(2n){transform:rotate(-3deg)}
+.teaser-strip img:nth-child(2n+1){transform:rotate(2.5deg)}
+@media(hover:hover){.teaser-strip img:hover{transform:scale(1.08) rotate(0deg);position:relative;z-index:2;filter:blur(0) saturate(1.05)}}
+@media(max-width:600px){.teaser-strip{gap:10px;margin-top:28px}.teaser-strip img{width:70px;height:70px;border-radius:12px;filter:blur(2px) saturate(1.05)}}
 .clear-btn{border:0;background:none;color:var(--blue);font-weight:600;cursor:pointer;padding:8px}
 .empty-state{border:2px dashed rgba(0,0,0,.1);border-radius:20px;padding:70px 20px;text-align:center;color:var(--muted)}
 .empty-state svg{width:45px;height:45px;opacity:.4;margin-bottom:12px}
@@ -323,7 +335,7 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 <div class="container" id="mainContainer">
   <header>
     <h1 id="pageTitle">The One Piece</h1>
-    <p id="pageSubtitle">Take a look at this treasures</p>
+    <p id="pageSubtitle">Take a look at these treasures</p>
   </header>
 
   <div id="adminOnly" hidden>
@@ -379,6 +391,8 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
       Preview Videos
     </button>
   </div>
+
+  <div class="teaser-strip" id="teaserStrip"></div>
 </div>
 
 <!-- Preview page -->
@@ -690,6 +704,24 @@ function updateUI(){
   previewVideos.hidden=videoCount===0;
   previewFavorites.hidden=favCount===0;
   clearAll.hidden=count===0;
+  updateTeaserStrip();
+}
+
+function updateTeaserStrip(){
+  var teaserStrip=document.getElementById('teaserStrip');
+  if(!teaserStrip)return;
+  var images=items.filter(isImage);
+  if(!images.length){teaserStrip.classList.remove('show');teaserStrip.innerHTML='';return}
+  var favs=images.filter(function(x){return x.favorite});
+  var rest=images.filter(function(x){return !x.favorite});
+  var pick=favs.concat(rest).slice(0,6);
+  teaserStrip.innerHTML='';
+  pick.forEach(function(item){
+    var img=document.createElement('img');
+    img.src=getURL(item);img.alt='';img.draggable=false;
+    teaserStrip.appendChild(img);
+  });
+  requestAnimationFrame(function(){teaserStrip.classList.add('show')});
 }
 
 function toggleFavorite(id){
