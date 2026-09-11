@@ -105,14 +105,32 @@ header p{margin:0;color:var(--muted);font-size:16px}
 /* Large image/video viewer */
 .viewer{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.58);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:center;padding:22px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s,visibility .2s;touch-action:auto}
 .viewer.open{opacity:1;visibility:visible;pointer-events:auto}
-.viewer-inner{position:relative;max-width:94vw;max-height:90vh;display:flex;align-items:center;justify-content:center;transform:scale(.9);opacity:0;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.viewer-inner{position:relative;width:fit-content;max-width:94vw;max-height:90vh;display:flex;align-items:center;justify-content:center;gap:24px;transform:scale(.9);opacity:0;transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s;box-sizing:border-box}
 .viewer.open .viewer-inner{transform:scale(1);opacity:1}
-.viewer img{display:block;max-width:94vw;max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.45);user-select:none;-webkit-user-drag:none}
-.viewer video{display:block;max-width:94vw;max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:18px;background:#000;box-shadow:0 20px 70px rgba(0,0,0,.45);pointer-events:auto}.viewer-video-holder{display:flex;align-items:center;justify-content:center;max-width:94vw;max-height:88vh;pointer-events:auto}
+.viewer img{display:block;max-width:calc(94vw - 344px);max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.45);user-select:none;-webkit-user-drag:none}
+.viewer video{display:block;max-width:calc(94vw - 344px);max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:18px;background:#000;box-shadow:0 20px 70px rgba(0,0,0,.45);pointer-events:auto}.viewer-video-holder{display:flex;align-items:center;justify-content:center;max-width:94vw;max-height:88vh;pointer-events:auto}
 .viewer-close{position:absolute;top:-12px;right:-12px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(45,45,45,.82);color:white;display:flex;align-items:center;justify-content:center;z-index:10;cursor:pointer}
 .viewer-close svg{width:18px;height:18px}
 .viewer-heart{position:absolute;left:12px;bottom:12px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.58);color:white;display:flex;align-items:center;justify-content:center;z-index:10;pointer-events:none}
 .viewer-heart svg{width:21px;height:21px;fill:currentColor}
+/* Description panel: appears only when a description exists, or to the signed-in admin for editing */
+.viewer-description{display:none;position:relative;width:min(320px,24vw);max-height:78vh;margin-left:0;padding:22px 22px 20px;border-radius:18px;background:rgba(24,24,24,.78);color:#fff;box-shadow:0 20px 70px rgba(0,0,0,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:auto;flex:0 0 auto}
+.viewer.has-description .viewer-description{display:block}
+.viewer-description-title{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+.viewer-description-text{margin:0;white-space:pre-wrap;word-break:break-word;font-size:16px;line-height:1.55;color:#fff}
+.viewer-description-empty{color:rgba(255,255,255,.55);font-size:15px;line-height:1.5}
+.viewer-description-actions{display:flex;gap:8px;margin-top:16px}
+.viewer-description-btn{border:0;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:650;cursor:pointer}
+.viewer-description-edit{background:#fff;color:#111}
+.viewer-description-save{background:#fff;color:#111}
+.viewer-description-cancel{background:rgba(255,255,255,.12);color:#fff}
+.viewer-description-editor{display:none;width:100%;min-height:150px;resize:vertical;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(0,0,0,.28);color:#fff;padding:12px;font:inherit;font-size:15px;line-height:1.5;outline:none}
+.viewer-description.editing .viewer-description-text,.viewer-description.editing .viewer-description-empty{display:none}
+.viewer-description.editing .viewer-description-editor{display:block}
+.viewer-description.editing .viewer-description-actions{display:flex}
+.viewer-description.editing .viewer-description-edit{display:none}
+.viewer-description:not(.editing) .viewer-description-save,.viewer-description:not(.editing) .viewer-description-cancel{display:none}
+
 .swipe-left{animation:swipeLeft .22s ease}.swipe-right{animation:swipeRight .22s ease}
 @keyframes swipeLeft{0%{transform:translateX(0) scale(1);opacity:1}45%{transform:translateX(-25px) scale(.97);opacity:.45}100%{transform:translateX(0) scale(1);opacity:1}}
 @keyframes swipeRight{0%{transform:translateX(0) scale(1);opacity:1}45%{transform:translateX(25px) scale(.97);opacity:.45}100%{transform:translateX(0) scale(1);opacity:1}}
@@ -300,6 +318,66 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
   .auth-card{padding:28px 22px;border-radius:22px}
   .sign-out-btn,.login-btn{top:10px;right:10px;font-size:12px;padding:7px 12px}
 }
+
+
+@media (max-width:850px){
+  .viewer.has-description .viewer-inner{
+    max-width:96vw;
+    max-height:90vh;
+  }
+  .viewer.has-description img,.viewer.has-description video{
+    max-width:calc(96vw - 322px);
+    max-height:84vh;
+  }
+}
+@media (max-width:600px){
+  .viewer.has-description .viewer-inner{
+    flex-direction:column;
+    align-items:center;
+    width:96vw;
+    max-width:96vw;
+    max-height:92vh;
+    overflow:auto;
+    gap:0;
+  }
+  .viewer.has-description img,.viewer.has-description video{
+    max-width:96vw;
+    max-height:58vh;
+  }
+}
+
+
+/* ===== Video size warning ===== */
+.video-limit-modal{
+  position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(0,0,0,.52);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.video-limit-modal.open{display:flex}
+.video-limit-card{
+  width:min(390px,calc(100vw - 40px));box-sizing:border-box;padding:24px 22px 20px;
+  border:1px solid rgba(255,255,255,.12);border-radius:24px;background:rgba(28,28,30,.96);
+  box-shadow:0 24px 70px rgba(0,0,0,.45);color:#fff;text-align:center;
+}
+.video-limit-icon{
+  width:54px;height:54px;margin:0 auto 14px;border-radius:17px;display:grid;place-items:center;
+  background:rgba(255,149,0,.16);color:#ffb340;
+}
+.video-limit-icon svg{width:28px;height:28px}
+.video-limit-title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.video-limit-text{font-size:15px;line-height:1.5;color:rgba(255,255,255,.72);margin:0}
+.video-limit-size{
+  margin:16px 0 18px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.07);
+  font-size:14px;line-height:1.45;text-align:left;word-break:break-word;
+}
+.video-limit-size strong{color:#fff}
+.video-limit-button{
+  width:100%;border:0;border-radius:14px;padding:12px 16px;background:#fff;color:#111;
+  font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.video-limit-button:active{transform:scale(.985)}
+@media (max-width:480px){
+  .video-limit-card{padding:22px 18px 18px;border-radius:22px}
+}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-T9EPM6W72B"></script>
@@ -404,11 +482,38 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
   <div id="previewGrid"></div>
 </div>
 
+
+<!-- Video size warning -->
+<div class="video-limit-modal" id="videoLimitModal" aria-modal="true" role="dialog" aria-labelledby="videoLimitTitle">
+  <div class="video-limit-card">
+    <div class="video-limit-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3 2.8 20h18.4L12 3z"/><path d="M12 9v5"/><circle cx="12" cy="17" r=".8" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="video-limit-title" id="videoLimitTitle">วิดีโอใหญ่เกินไป</div>
+    <p class="video-limit-text">อัปโหลดวิดีโอได้ไม่เกิน <strong>50 MB ต่อคลิป</strong></p>
+    <div class="video-limit-size" id="videoLimitSize"></div>
+    <button class="video-limit-button" id="videoLimitClose" type="button">เข้าใจแล้ว</button>
+  </div>
+</div>
+
 <!-- Large viewer -->
 <div class="viewer" id="viewer" aria-modal="true" role="dialog">
   <div class="viewer-inner" id="viewerInner">
     <img id="viewerImage" alt="Preview" draggable="false">
     <div id="viewerVideoHolder"></div>
+    <div class="viewer-description" id="viewerDescription">
+      <div class="viewer-description-title">Description</div>
+      <p class="viewer-description-text" id="viewerDescriptionText"></p>
+      <div class="viewer-description-empty" id="viewerDescriptionEmpty">No description yet.</div>
+      <textarea class="viewer-description-editor" id="viewerDescriptionEditor" maxlength="2000" placeholder="Write a description…"></textarea>
+      <div class="viewer-description-actions">
+        <button class="viewer-description-btn viewer-description-edit" id="editDescription" type="button">Edit</button>
+        <button class="viewer-description-btn viewer-description-save" id="saveDescription" type="button">Save</button>
+        <button class="viewer-description-btn viewer-description-cancel" id="cancelDescription" type="button">Cancel</button>
+      </div>
+    </div>
     <div class="viewer-heart" id="viewerHeart" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
     </div>
@@ -432,7 +537,7 @@ var sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 var BUCKET='media';
 var currentUser=null;
 
-var MAX_VIDEO_SIZE=80*1024*1024;
+var MAX_VIDEO_SIZE=50*1024*1024;
 var items=[];
 var previewMode='';
 var viewerIndex=-1;
@@ -463,7 +568,17 @@ var viewer=document.getElementById('viewer');
 var viewerInner=document.getElementById('viewerInner');
 var viewerImage=document.getElementById('viewerImage');
 var viewerVideoHolder=document.getElementById('viewerVideoHolder');
+var viewerDescription=document.getElementById('viewerDescription');
+var viewerDescriptionText=document.getElementById('viewerDescriptionText');
+var viewerDescriptionEmpty=document.getElementById('viewerDescriptionEmpty');
+var viewerDescriptionEditor=document.getElementById('viewerDescriptionEditor');
+var editDescription=document.getElementById('editDescription');
+var saveDescription=document.getElementById('saveDescription');
+var cancelDescription=document.getElementById('cancelDescription');
 var viewerHeart=document.getElementById('viewerHeart');
+var videoLimitModal=document.getElementById('videoLimitModal');
+var videoLimitSize=document.getElementById('videoLimitSize');
+var videoLimitClose=document.getElementById('videoLimitClose');
 var closeViewer=document.getElementById('closeViewer');
 var authModal=document.getElementById('authModal');
 var authClose=document.getElementById('authClose');
@@ -479,7 +594,16 @@ var adminOnly=document.getElementById('adminOnly');
 function isVideo(item){return !!(item && item.type==='video')}
 function isImage(item){return !!(item && item.type==='image')}
 function videoFile(file){return file && file.type && file.type.indexOf('video/')===0}
+function escapeHtml(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;')}
 function formatMB(bytes){return (bytes/(1024*1024)).toFixed(1)}
+function showVideoLimitWarning(file){
+  videoLimitSize.innerHTML='<strong>'+escapeHtml(file.name||'This video')+'</strong><br>ขนาดไฟล์: '+formatMB(file.size)+' MB<br>ขนาดสูงสุด: 50 MB';
+  videoLimitModal.classList.add('open');
+}
+function closeVideoLimitWarning(){videoLimitModal.classList.remove('open')}
+videoLimitClose.addEventListener('click',closeVideoLimitWarning);
+videoLimitModal.addEventListener('click',function(e){if(e.target===videoLimitModal)closeVideoLimitWarning()});
+
 function getURL(item){if(!item.url)item.url=URL.createObjectURL(item.blob);return item.url}
 
 /* ---------- small helpers ---------- */
@@ -515,7 +639,7 @@ async function cloudPut(item){
   if(up.error)throw up.error;
   var ins=await sb.from('media_items').insert({
     user_id:currentUser.id,type:item.type,name:item.name||null,
-    favorite:false,storage_path:path
+    favorite:false,storage_path:path,description:item.description||null
   }).select().single();
   if(ins.error){
     sb.storage.from(BUCKET).remove([path]).catch(function(){});
@@ -526,6 +650,9 @@ async function cloudPut(item){
 }
 async function cloudSetFavorite(item){
   return sb.from('media_items').update({favorite:!!item.favorite}).eq('id',item.id);
+}
+async function cloudSetDescription(item,description){
+  return sb.from('media_items').update({description:description||null}).eq('id',item.id);
 }
 async function cloudDelete(item){
   if(item.storagePath)await sb.storage.from(BUCKET).remove([item.storagePath]);
@@ -552,7 +679,7 @@ async function loadGallery(){
     results.forEach(function(r){
       if(r.signed.error){console.error(r.signed.error);return}
       var row=r.row;
-      loaded.push({id:row.id,type:row.type,blob:null,name:row.name,favorite:!!row.favorite,storagePath:row.storage_path,url:r.signed.data.signedUrl,thumbnail:''});
+      loaded.push({id:row.id,type:row.type,blob:null,name:row.name,description:row.description||'',favorite:!!row.favorite,storagePath:row.storage_path,url:r.signed.data.signedUrl,thumbnail:''});
     });
     items=loaded;
     setEmptyStateText('No photos or videos yet');
@@ -867,6 +994,59 @@ function closePreview(){
   previewMode='';
 }
 
+function resetDescriptionEditor(){
+  viewerDescription.classList.remove('editing');
+  viewerDescriptionEditor.value='';
+}
+function renderViewerDescription(item){
+  var description=(item&&item.description?String(item.description):'').trim();
+  var isAdmin=!!currentUser;
+  viewerDescriptionText.textContent=description;
+  viewerDescriptionEmpty.style.display=description?'none':'block';
+  viewerDescriptionText.style.display=description?'block':'none';
+  viewerDescriptionEditor.value=description;
+  viewerDescription.classList.toggle('has-content',!!description);
+  viewerDescription.classList.toggle('admin-editable',isAdmin);
+  viewerDescription.style.display=(description||isAdmin)?'block':'none';
+  editDescription.style.display=isAdmin?'inline-flex':'none';
+  resetDescriptionEditor();
+  viewer.classList.toggle('has-description',!!description||isAdmin);
+}
+function startDescriptionEdit(){
+  if(!currentUser||viewerIndex===-1)return;
+  var item=items[viewerIndex];
+  if(!item)return;
+  viewerDescriptionEditor.value=item.description||'';
+  viewerDescription.classList.add('editing');
+  viewerDescriptionEditor.focus();
+}
+async function saveViewerDescription(){
+  if(!currentUser||viewerIndex===-1)return;
+  var item=items[viewerIndex];
+  if(!item)return;
+  var value=viewerDescriptionEditor.value.trim();
+  var oldValue=item.description||'';
+  item.description=value;
+  saveDescription.disabled=true;
+  saveDescription.textContent='Saving…';
+  try{
+    var res=await cloudSetDescription(item,value);
+    if(res.error)throw res.error;
+    renderViewerDescription(item);
+  }catch(err){
+    item.description=oldValue;
+    console.error(err);
+    alert('Could not save the description. Please try again.');
+    renderViewerDescription(item);
+  }finally{
+    saveDescription.disabled=false;
+    saveDescription.textContent='Save';
+  }
+}
+function cancelDescriptionEdit(){
+  if(viewerIndex===-1)return;
+  renderViewerDescription(items[viewerIndex]);
+}
 function clearViewerMedia(){
   viewerImage.style.display='none';viewerImage.removeAttribute('src');
   while(viewerVideoHolder.firstChild){
@@ -884,6 +1064,7 @@ function openViewer(index,mode){
   viewerIndex=index;
   var item=items[index];
   clearViewerMedia();
+  renderViewerDescription(item);
   viewerHeart.style.display=item.favorite?'flex':'none';
   if(isImage(item)){
     viewerImage.src=getURL(item);viewerImage.style.display='block';
@@ -899,7 +1080,9 @@ function openViewerById(id){
   if(index!==-1)openViewer(index);
 }
 function closeViewerNow(){
-  viewer.classList.remove('open');
+  viewer.classList.remove('open','has-description');
+  viewerDescription.style.display='none';
+  resetDescriptionEditor();
   clearViewerMedia();
   viewerIndex=-1;
   viewerList=[];
@@ -933,6 +1116,7 @@ viewer.addEventListener('touchend',function(e){
 },{passive:true});
 
 document.addEventListener('keydown',function(e){
+  if(videoLimitModal.classList.contains('open')&&e.key==='Escape'){e.preventDefault();closeVideoLimitWarning();return;}
   if(viewer.classList.contains('open')){
     if(e.key==='ArrowLeft'){e.preventDefault();changeViewer(-1)}
     else if(e.key==='ArrowRight'){e.preventDefault();changeViewer(1)}
@@ -943,6 +1127,9 @@ document.addEventListener('keydown',function(e){
 viewer.addEventListener('click',function(e){if(e.target===viewer)closeViewerSafe()});
 viewerInner.addEventListener('click',function(e){e.stopPropagation()});
 closeViewer.addEventListener('click',closeViewerSafe);
+editDescription.addEventListener('click',startDescriptionEdit);
+saveDescription.addEventListener('click',saveViewerDescription);
+cancelDescription.addEventListener('click',cancelDescriptionEdit);
 chooseImages.addEventListener('click',function(){imageInput.click()});
 chooseVideos.addEventListener('click',function(){videoInput.click()});
 previewImages.addEventListener('click',function(){openPreview('images')});
@@ -955,10 +1142,10 @@ async function addFiles(files,type){
   for(var i=0;i<files.length;i++){
     var file=files[i];
     if(type==='video'&&file.size>MAX_VIDEO_SIZE){
-      alert('Video is too large. Maximum size is 80 MB.\nSelected: '+formatMB(file.size)+' MB');
+      showVideoLimitWarning(file);
       continue;
     }
-    var item={id:'tmp-'+newFileId(),type:type,blob:file,name:file.name,favorite:false,url:URL.createObjectURL(file),thumbnail:''};
+    var item={id:'tmp-'+newFileId(),type:type,blob:file,name:file.name,description:'',favorite:false,url:URL.createObjectURL(file),thumbnail:''};
     items.push(item);
     batch.push(item);
   }
