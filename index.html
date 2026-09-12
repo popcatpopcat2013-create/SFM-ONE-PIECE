@@ -45,9 +45,43 @@ header p{margin:0;color:var(--muted);font-size:16px}
 #publicActions .action-btn:hover{background:#fdf8ef}
 .teaser-strip{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:40px;padding:0 20px;opacity:0;transition:opacity .6s ease}
 .teaser-strip.show{opacity:1}
-.teaser-strip img{width:104px;height:104px;object-fit:cover;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.14);transition:transform .2s ease,filter .25s ease;background:#e5e5e7;filter:blur(3px) saturate(1.05)}
+.teaser-strip img{
+  width:104px;height:104px;object-fit:cover;border-radius:16px;
+  border:1px solid rgba(218,180,80,.58);
+  box-shadow:
+    0 8px 22px rgba(0,0,0,.14),
+    0 0 3px rgba(218,180,80,.55),
+    0 0 10px rgba(218,180,80,.34),
+    0 0 20px rgba(218,180,80,.18);
+  transition:transform .2s ease,filter .25s ease;
+  background:#e5e5e7;
+  filter:blur(3px) saturate(1.05);
+  animation:teaserGoldGlow 4.2s ease-in-out infinite;
+  will-change:box-shadow;
+}
 .teaser-strip img:nth-child(2n){transform:rotate(-3deg)}
 .teaser-strip img:nth-child(2n+1){transform:rotate(2.5deg)}
+@keyframes teaserGoldGlow{
+  0%,100%{
+    border-color:rgba(218,180,80,.52);
+    box-shadow:
+      0 8px 22px rgba(0,0,0,.14),
+      0 0 3px rgba(218,180,80,.48),
+      0 0 10px rgba(218,180,80,.28),
+      0 0 20px rgba(218,180,80,.15);
+  }
+  50%{
+    border-color:rgba(232,200,110,.82);
+    box-shadow:
+      0 8px 22px rgba(0,0,0,.14),
+      0 0 4px rgba(232,200,110,.72),
+      0 0 12px rgba(232,200,110,.50),
+      0 0 25px rgba(232,200,110,.28);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .teaser-strip img{animation:none}
+}
 @media(hover:hover){.teaser-strip img:hover{transform:scale(1.08) rotate(0deg);position:relative;z-index:2;filter:blur(0) saturate(1.05)}}
 @media(max-width:600px){.teaser-strip{gap:10px;margin-top:28px}.teaser-strip img{width:70px;height:70px;border-radius:12px;filter:blur(2px) saturate(1.05)}}
 .clear-btn{border:0;background:none;color:var(--blue);font-weight:600;cursor:pointer;padding:8px}
@@ -219,6 +253,17 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
   font-weight:700;
   letter-spacing:-.035em;
 }
+.preview-header-left,.preview-header-actions{display:flex;align-items:center;gap:10px}
+.preview-header-left{min-width:0}
+.preview-header-left h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.preview-header-actions{margin-left:auto}
+.folders-btn,.preview-back-btn{border:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font:inherit;color:#1d1d1f;background:rgba(0,0,0,.055);transition:transform .16s ease,background .16s ease}
+.folders-btn{height:38px;padding:0 13px;border-radius:12px;gap:7px;font-size:15px;font-weight:650}
+.folders-btn svg{width:18px;height:18px}
+.preview-back-btn{width:36px;height:36px;border-radius:50%}
+.preview-back-btn svg{width:21px;height:21px}
+.folders-btn:hover,.preview-back-btn:hover{background:rgba(0,0,0,.09)}
+.folders-btn:active,.preview-back-btn:active{transform:scale(.95)}
 .done-btn{
   min-height:38px;
   padding:0 15px;
@@ -236,6 +281,19 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
   max-width:1500px;
   margin:0 auto;
 }
+.preview-folders-grid{padding:28px 26px 50px;max-width:1500px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.preview-folder-items-grid{position:relative;padding:24px;min-height:200px;opacity:1;transform:translateY(0);transition:opacity .24s ease,transform .28s cubic-bezier(.22,1,.36,1)}.preview-folder-items-grid.folder-enter{opacity:0;transform:translateY(9px)}.preview-folder-items-grid .preview-card{position:absolute;border-radius:17px;overflow:hidden;box-shadow:var(--shadow);background:#ddd;cursor:pointer}.preview-folder-items-grid .preview-card.image img{display:block;width:100%;height:auto}.preview-folder-items-grid .preview-card.video{aspect-ratio:16/9;background:#111}.preview-folder-items-grid .preview-card.video video{display:block;width:100%;height:100%;object-fit:cover;background:#111;pointer-events:none}
+
+.folder-card{border:1px solid rgba(0,0,0,.07);background:rgba(255,255,255,.82);border-radius:20px;padding:20px;text-align:left;cursor:pointer;box-shadow:0 6px 22px rgba(0,0,0,.055);transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.folder-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.09);background:#fff}
+.folder-card:active{transform:scale(.985)}
+.folder-delete-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:#777;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}.folder-delete-btn svg{width:15px;height:15px}.folder-delete-btn:hover{background:rgba(198,40,40,.1);color:#c62828}.folder-card{position:relative;padding-right:48px}
+.folder-icon{width:46px;height:46px;border-radius:14px;background:rgba(0,113,227,.09);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:#0071e3}
+.folder-icon svg{width:25px;height:25px}
+.folder-name{font-size:18px;font-weight:700;letter-spacing:-.025em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-count{font-size:13px;color:#777;margin-top:5px}
+.folder-add-btn{margin-top:14px;height:34px;padding:0 12px;border:1px solid rgba(0,113,227,.22);border-radius:10px;background:rgba(0,113,227,.08);color:#0071e3;font:inherit;font-size:13px;font-weight:650;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:transform .22s cubic-bezier(.22,1,.36,1),background .22s ease,border-color .22s ease}.folder-add-btn:hover{background:rgba(0,113,227,.13);border-color:rgba(0,113,227,.35)}.folder-add-btn:active{transform:scale(.96)}.folder-add-btn svg{width:15px;height:15px}
+.folder-empty{grid-column:1/-1}
 .preview-images-grid .preview-card{
   border-radius:18px;
   box-shadow:0 6px 22px rgba(0,0,0,.075);
@@ -296,6 +354,26 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
   }
 }
 
+.folder-upload-row{margin-top:16px;padding-top:15px;border-top:1px solid rgba(0,0,0,.07)}
+.folder-upload-label{display:block;font-size:13px;font-weight:650;color:#666;margin:0 0 8px 2px}
+.folder-upload-controls{display:flex;gap:9px;align-items:center}
+.folder-upload-select{flex:1;min-width:0;height:42px;padding:0 12px;border:1px solid rgba(0,0,0,.11);border-radius:12px;background:#fff;color:#1d1d1f;font:inherit;font-size:14px;outline:none}
+.folder-upload-select:focus{border-color:rgba(0,113,227,.45);box-shadow:0 0 0 3px rgba(0,113,227,.10)}
+.new-folder-btn{height:42px;padding:0 13px;border:0;border-radius:12px;background:rgba(0,0,0,.055);color:#1d1d1f;font:inherit;font-size:14px;font-weight:650;cursor:pointer;white-space:nowrap}
+.new-folder-btn:active{transform:scale(.97)}
+@media(max-width:600px){
+  .folder-upload-controls{align-items:stretch;flex-direction:column}
+  .folder-upload-select,.new-folder-btn{width:100%}
+  .preview-header{gap:8px}
+  .preview-header-actions{gap:7px}
+  .folders-btn{height:36px;padding:0 10px;font-size:13px}
+  .folders-btn svg{width:17px;height:17px}
+  .preview-back-btn{width:34px;height:34px}
+  .preview-folders-grid{padding:18px 12px 34px;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+  .folder-card{padding:16px;border-radius:16px}
+  .folder-name{font-size:16px}
+}
+
 /* ===== Auth screen ===== */
 .auth-screen{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
 .auth-card{width:100%;max-width:380px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.06);border-radius:28px;padding:34px 28px;box-shadow:0 10px 35px rgba(0,0,0,.08);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:center}
@@ -347,6 +425,37 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 }
 
 
+
+/* ===== Feedback ===== */
+.feedback-fab{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:80;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#55555a;border-radius:999px;padding:10px 15px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:650;box-shadow:0 6px 22px rgba(0,0,0,.12);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.feedback-fab svg{width:17px;height:17px}
+.feedback-fab:active{transform:translateX(-50%) scale(.95)}
+.feedback-modal{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.feedback-modal[hidden]{display:none}
+.feedback-card{position:relative;width:min(430px,calc(100vw - 40px));background:rgba(255,255,255,.96);border:1px solid rgba(0,0,0,.07);border-radius:26px;padding:25px 22px 20px;box-shadow:0 24px 70px rgba(0,0,0,.2)}
+.feedback-card h2{margin:0 0 5px;font-size:23px;letter-spacing:-.025em}
+.feedback-sub{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.45}
+.feedback-field{display:block;width:100%;border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:13px;padding:12px 13px;font-size:15px;font-family:inherit;margin-bottom:10px;outline:none}
+.feedback-field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.12)}
+.feedback-message{min-height:130px;resize:vertical}
+.feedback-send{width:100%;border:0;border-radius:14px;padding:13px 16px;background:#111;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
+.feedback-send:disabled{opacity:.55;cursor:default}
+.feedback-close{position:absolute;top:13px;right:13px;width:31px;height:31px;border:0;border-radius:50%;background:rgba(0,0,0,.06);color:#444;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.feedback-close svg{width:14px;height:14px}
+.feedback-status{min-height:18px;margin:10px 0 0;text-align:center;font-size:13px;font-weight:650}
+.feedback-status.success{color:#248a4b}.feedback-status.error{color:#c62828}
+.feedback-admin{margin-top:34px;padding:22px;border-radius:22px;background:rgba(255,255,255,.72);border:1px solid rgba(0,0,0,.07);box-shadow:var(--shadow)}
+.feedback-admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.feedback-admin-title{margin:0;font-size:22px;letter-spacing:-.02em}
+.feedback-refresh{border:1px solid rgba(0,0,0,.1);background:#fff;border-radius:999px;padding:8px 13px;font-size:13px;font-weight:650;cursor:pointer}
+.feedback-list{display:grid;gap:10px}.feedback-empty{color:var(--muted);text-align:center;padding:28px 10px}
+.feedback-item{padding:15px 16px;border-radius:16px;background:#fff;border:1px solid rgba(0,0,0,.07)}
+.feedback-item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:7px}
+.feedback-item-subject{font-size:15px;font-weight:700;word-break:break-word}.feedback-item-date{font-size:11px;color:var(--muted);white-space:nowrap}
+.feedback-item-message{margin:0;color:#444;white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.5}
+.feedback-delete{margin-top:10px;border:0;background:none;color:#c62828;font-size:12px;font-weight:650;padding:3px 0;cursor:pointer}
+@media(max-width:600px){.feedback-fab{left:50%;bottom:12px;padding:9px 13px}.feedback-card{border-radius:22px;padding:23px 18px 18px}.feedback-admin{padding:17px}.feedback-item-top{display:block}.feedback-item-date{display:block;margin-top:4px}}
+
 /* ===== Video size warning ===== */
 .video-limit-modal{
   position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
@@ -378,6 +487,216 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 @media (max-width:480px){
   .video-limit-card{padding:22px 18px 18px;border-radius:22px}
 }
+/* ===== The One Piece: visible but subtle neon glow ===== */
+header h1#pageTitle{
+  color:#171719;
+  text-shadow:
+    0 0 2px rgba(0,113,227,.55),
+    0 0 8px rgba(0,113,227,.42),
+    0 0 18px rgba(0,113,227,.24);
+  animation:titleGlow 4.2s ease-in-out infinite;
+}
+@keyframes titleGlow{
+  0%,100%{
+    text-shadow:
+      0 0 2px rgba(0,113,227,.50),
+      0 0 8px rgba(0,113,227,.36),
+      0 0 18px rgba(0,113,227,.20);
+  }
+  50%{
+    text-shadow:
+      0 0 3px rgba(0,113,227,.72),
+      0 0 11px rgba(0,113,227,.52),
+      0 0 24px rgba(0,113,227,.30);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  header h1#pageTitle{animation:none}
+}
+
+/* ===== iOS-style motion system =====
+   Subtle, fast, spring-like feedback without adding heavy animation.
+*/
+:root{
+  --ios-ease:cubic-bezier(.22,1,.36,1);
+  --ios-ease-soft:cubic-bezier(.2,.8,.2,1);
+}
+
+/* Buttons: quick physical press response */
+button{
+  -webkit-tap-highlight-color:transparent;
+}
+.action-btn,
+.upload-btn,
+.login-btn,
+.sign-out-btn,
+.done-btn,
+.folders-btn,
+.preview-back-btn,
+.new-folder-btn,
+.folder-delete-btn,
+.clear-btn,
+.auth-submit,
+.auth-close,
+.auth-switch,
+.feedback-fab,
+.feedback-close,
+.feedback-send,
+.video-limit-button,
+.viewer-close,
+.viewer-nav,
+.viewer-heart,
+.edit-description,
+.save-description,
+.cancel-description{
+  transition:
+    transform .20s var(--ios-ease),
+    background-color .20s ease,
+    box-shadow .20s ease,
+    opacity .20s ease;
+}
+.action-btn:active,
+.upload-btn:active,
+.login-btn:active,
+.sign-out-btn:active,
+.done-btn:active,
+.folders-btn:active,
+.preview-back-btn:active,
+.new-folder-btn:active,
+.clear-btn:active,
+.auth-submit:active,
+.auth-close:active,
+.auth-switch:active,
+.feedback-close:active,
+.feedback-send:active,
+.video-limit-button:active,
+.viewer-close:active,
+.viewer-nav:active,
+.viewer-heart:active,
+.edit-description:active,
+.save-description:active,
+.cancel-description:active{
+  transform:scale(.965);
+}
+.feedback-fab:active{
+  transform:translateX(-50%) scale(.965);
+}
+.folder-delete-btn:active,
+.delete-btn:active,
+.favorite-btn:active{
+  transform:scale(.92);
+}
+
+/* Home cards: softer lift + press, while preserving the existing entrance animation */
+.card{
+  transition:transform .26s var(--ios-ease),box-shadow .26s ease;
+}
+.card:active{
+  transform:scale(.985);
+}
+
+/* Preview page: a little opacity with the existing upward motion */
+.preview-overlay{
+  opacity:0;
+  transform:translateY(100%) scale(.985);
+  transition:
+    transform .38s var(--ios-ease),
+    opacity .28s ease;
+  will-change:transform,opacity;
+}
+.preview-overlay.open{
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+
+/* Preview cards: fixed video aspect-ratio means this stays smooth without reflow */
+.preview-videos-grid .preview-card,
+.preview-favorites-grid .preview-card{
+  animation:iosCardIn .38s var(--ios-ease) both;
+  will-change:transform,opacity;
+}
+.preview-videos-grid .preview-card:nth-child(2),
+.preview-favorites-grid .preview-card:nth-child(2){animation-delay:.025s}
+.preview-videos-grid .preview-card:nth-child(3),
+.preview-favorites-grid .preview-card:nth-child(3){animation-delay:.05s}
+.preview-videos-grid .preview-card:nth-child(4),
+.preview-favorites-grid .preview-card:nth-child(4){animation-delay:.075s}
+.preview-videos-grid .preview-card:nth-child(5),
+.preview-favorites-grid .preview-card:nth-child(5){animation-delay:.10s}
+.preview-videos-grid .preview-card:nth-child(6),
+.preview-favorites-grid .preview-card:nth-child(6){animation-delay:.125s}
+@keyframes iosCardIn{
+  from{opacity:0;transform:translateY(10px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* Folder contents: keep the container transition, then let cards arrive softly */
+.preview-folder-items-grid .preview-card{
+  animation:iosFolderCardIn .34s var(--ios-ease) both;
+  will-change:transform,opacity;
+}
+.preview-folder-items-grid .preview-card:nth-child(2){animation-delay:.025s}
+.preview-folder-items-grid .preview-card:nth-child(3){animation-delay:.05s}
+.preview-folder-items-grid .preview-card:nth-child(4){animation-delay:.075s}
+.preview-folder-items-grid .preview-card:nth-child(5){animation-delay:.10s}
+.preview-folder-items-grid .preview-card:nth-child(6){animation-delay:.125s}
+@keyframes iosFolderCardIn{
+  from{opacity:0;transform:translateY(8px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* Existing image masonry gets the same gentle entrance after its layout is ready */
+.preview-images-grid .preview-card{
+  transition:
+    transform .28s var(--ios-ease),
+    box-shadow .28s ease,
+    left .28s var(--ios-ease),
+    top .28s var(--ios-ease);
+}
+
+/* Viewer: slightly longer, softer scale-in for a native-feeling presentation */
+.viewer{
+  transition:opacity .28s ease,visibility .28s ease;
+}
+.viewer-inner{
+  transition:
+    transform .34s var(--ios-ease),
+    opacity .25s ease;
+}
+
+/* Reduce motion remains respected */
+@media(prefers-reduced-motion:reduce){
+  .preview-overlay,
+  .viewer,
+  .viewer-inner,
+  .preview-videos-grid .preview-card,
+  .preview-favorites-grid .preview-card,
+  .preview-folder-items-grid .preview-card{
+    animation:none !important;
+    transition:none !important;
+  }
+}
+
+
+/* ---------- Initial loading screen ---------- */
+#initialLoading{
+  position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;
+  background:#f5f5f7;opacity:1;visibility:visible;
+  transition:opacity .38s cubic-bezier(.22,1,.36,1),visibility 0s linear 0s;
+}
+#initialLoading.hidden{
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .38s cubic-bezier(.22,1,.36,1),visibility 0s linear .38s;
+}
+.initial-loading-inner{text-align:center;padding:28px}
+.initial-loading-title{font-size:22px;font-weight:700;letter-spacing:-.02em;color:#171719;margin:0 0 10px}
+.initial-loading-text{font-size:14px;color:#6e6e73;margin:0 0 18px}
+.initial-loading-spinner{width:22px;height:22px;margin:0 auto;border:2.5px solid rgba(0,113,227,.18);border-top-color:#0071e3;border-radius:50%;animation:initialSpin .8s linear infinite}
+@keyframes initialSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){#initialLoading{transition:none}.initial-loading-spinner{animation:none}}
+
+
+.folder-manager-modal{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s ease,visibility 0s linear .25s}.folder-manager-modal.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .25s ease}.folder-manager-card{width:min(720px,100%);max-height:min(82vh,760px);background:rgba(255,255,255,.96);border:1px solid rgba(0,0,0,.08);border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden;transform:translateY(14px) scale(.985);transition:transform .35s cubic-bezier(.22,1,.36,1)}.folder-manager-modal.open .folder-manager-card{transform:none}.folder-manager-head{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}.folder-manager-title{font-size:20px;font-weight:750;letter-spacing:-.025em}.folder-manager-sub{font-size:13px;color:#777;margin-top:4px}.folder-manager-close{width:34px;height:34px;border:0;border-radius:50%;background:rgba(0,0,0,.06);font-size:20px;cursor:pointer}.folder-manager-list{padding:8px 18px 18px;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-content:start}.folder-manager-section-title{grid-column:1/-1;font-size:15px;font-weight:750;color:#1d1d1f;padding:10px 2px 0;letter-spacing:-.01em}.folder-manager-section-title:not(:first-child){margin-top:8px;border-top:1px solid rgba(0,0,0,.08);padding-top:18px}.folder-media-option{position:relative;height:210px;min-height:210px;border:1.5px solid rgba(0,0,0,.09);border-radius:16px;background:#fff;overflow:hidden;cursor:pointer;transition:transform .22s cubic-bezier(.22,1,.36,1),border-color .22s ease,box-shadow .22s ease;isolation:isolate}.folder-media-option:active{transform:scale(.97)}.folder-media-option.selected{border-color:#0071e3;box-shadow:0 0 0 3px rgba(0,113,227,.13)}.folder-media-option img,.folder-media-option video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#eee}.folder-media-option::after{content:'';position:absolute;inset:auto 0 0 0;height:52px;background:linear-gradient(transparent,rgba(0,0,0,.72));z-index:2;pointer-events:none}.folder-media-check{position:absolute;top:9px;right:9px;width:27px;height:27px;border-radius:50%;background:rgba(255,255,255,.94);box-shadow:0 2px 8px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;color:transparent;z-index:5}.folder-media-option.selected .folder-media-check{background:#0071e3;color:#fff}.folder-media-check svg{width:15px;height:15px}.folder-media-name{position:absolute;left:10px;right:42px;bottom:9px;color:#fff;font-size:12px;font-weight:650;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4;text-shadow:0 1px 3px rgba(0,0,0,.45)}.folder-media-index{position:absolute;left:9px;top:9px;min-width:27px;height:27px;padding:0 7px;border-radius:999px;background:rgba(0,0,0,.48);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:5}.folder-media-option.selected .folder-media-index{background:#0071e3}.folder-manager-empty{grid-column:1/-1;text-align:center;color:#777;padding:40px 10px}.folder-manager-foot{padding:14px 18px 18px;border-top:1px solid rgba(0,0,0,.07);display:flex;justify-content:flex-end;gap:9px}.folder-manager-btn{height:42px;padding:0 17px;border:0;border-radius:12px;font:inherit;font-weight:650;cursor:pointer}.folder-manager-btn.cancel{background:rgba(0,0,0,.06);color:#222}.folder-manager-btn.save{background:#0071e3;color:#fff}.folder-manager-btn:disabled{opacity:.55;cursor:default}@media(max-width:700px){.folder-manager-list{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px 14px 16px;gap:11px}.folder-media-option{height:170px;min-height:170px}.folder-manager-card{max-height:88vh;border-radius:21px}.folder-manager-head{padding:17px 17px 12px}.folder-manager-foot{padding:12px 14px 14px}}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-T9EPM6W72B"></script>
@@ -391,8 +710,20 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 </head>
 <body>
 
+<div id="initialLoading" aria-live="polite" aria-busy="true">
+  <div class="initial-loading-inner">
+    <h2 class="initial-loading-title">The One Piece</h2>
+    <p class="initial-loading-text">กำลังโหลดข้อมูล กรุณารอสักครู่...</p>
+    <div class="initial-loading-spinner" aria-hidden="true"></div>
+  </div>
+</div>
+
 <button class="login-btn" id="loginBtn" type="button" hidden>Login</button>
 <button class="sign-out-btn" id="signOutBtn" type="button" hidden>Sign Out</button>
+<button class="feedback-fab" id="feedbackBtn" type="button" aria-label="Send feedback">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-9 8.5 8.5 8.5 0 0 1-4.1-1.05L3 20l1.4-4.15A8.45 8.45 0 0 1 3 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg>
+  Feedback
+</button>
 
 <div class="auth-modal" id="authModal" hidden>
   <div class="auth-card">
@@ -432,6 +763,16 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
         </button>
       </div>
 
+      <div class="folder-upload-row">
+        <label class="folder-upload-label" for="uploadFolderSelect">Upload to folder</label>
+        <div class="folder-upload-controls">
+          <select id="uploadFolderSelect" class="folder-upload-select">
+            <option value="">No folder</option>
+          </select>
+          <button class="new-folder-btn" id="newFolderBtn" type="button">+ New Folder</button>
+        </div>
+      </div>
+
       <span class="count-label" id="countLabel"></span>
 
       <div class="actions">
@@ -440,6 +781,16 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
           Preview Favorite
         </button>
         <button class="clear-btn" id="clearAll" type="button" hidden>Clear All</button>
+      </div>
+    </div>
+
+    <div class="feedback-admin" id="feedbackAdmin">
+      <div class="feedback-admin-head">
+        <h2 class="feedback-admin-title">Feedback</h2>
+        <button class="feedback-refresh" id="feedbackRefresh" type="button">Refresh</button>
+      </div>
+      <div class="feedback-list" id="feedbackList">
+        <div class="feedback-empty">Loading feedback…</div>
       </div>
     </div>
 
@@ -473,15 +824,56 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
   <div class="teaser-strip" id="teaserStrip"></div>
 </div>
 
+
+<!-- Feedback -->
+<div class="feedback-modal" id="feedbackModal" hidden aria-modal="true" role="dialog" aria-labelledby="feedbackTitle">
+  <div class="feedback-card">
+    <button class="feedback-close" id="feedbackClose" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h2 id="feedbackTitle">Send Feedback</h2>
+    <p class="feedback-sub">พบปัญหา มีไอเดีย หรืออยากให้เราเพิ่มอะไร บอกแอดมินได้เลย</p>
+    <form id="feedbackForm">
+      <input class="feedback-field" id="feedbackSubject" type="text" maxlength="120" placeholder="หัวข้อ (เช่น เจอบั๊ก / อยากได้ฟีเจอร์ใหม่)" required>
+      <textarea class="feedback-field feedback-message" id="feedbackMessage" maxlength="3000" placeholder="เขียน Feedback ของคุณ…" required></textarea>
+      <button class="feedback-send" id="feedbackSend" type="submit">Send Feedback</button>
+    </form>
+    <div class="feedback-status" id="feedbackStatus" aria-live="polite"></div>
+  </div>
+</div>
+
 <!-- Preview page -->
 <div class="preview-overlay" id="previewOverlay" aria-modal="true" role="dialog">
   <div class="preview-header">
-    <h2 id="previewTitle">Preview</h2>
-    <button class="done-btn" id="donePreview" type="button">Done</button>
+    <div class="preview-header-left">
+      <button class="preview-back-btn" id="previewBack" type="button" aria-label="Back" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h2 id="previewTitle">Preview</h2>
+    </div>
+    <div class="preview-header-actions">
+      <button class="folders-btn" id="foldersBtn" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5A2.5 2.5 0 0 1 6 4h4l2 2h6a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 18 19H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M3.5 8h17"/></svg>
+        Folders
+      </button>
+      <button class="done-btn" id="donePreview" type="button">Done</button>
+    </div>
   </div>
   <div id="previewGrid"></div>
 </div>
 
+
+
+<div class="folder-manager-modal" id="folderManagerModal" aria-modal="true" role="dialog" aria-labelledby="folderManagerTitle">
+  <div class="folder-manager-card">
+    <div class="folder-manager-head">
+      <div><div class="folder-manager-title" id="folderManagerTitle">Add to Folder</div><div class="folder-manager-sub" id="folderManagerSub">เลือกไฟล์จากของรวมได้เลย ไม่ต้องอัปโหลดใหม่</div></div>
+      <button class="folder-manager-close" id="folderManagerClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="folder-manager-list" id="folderManagerList"></div>
+    <div class="folder-manager-foot"><button class="folder-manager-btn cancel" id="folderManagerCancel" type="button">Cancel</button><button class="folder-manager-btn save" id="folderManagerSave" type="button">Add to Folder</button></div>
+  </div>
+</div>
 
 <!-- Video size warning -->
 <div class="video-limit-modal" id="videoLimitModal" aria-modal="true" role="dialog" aria-labelledby="videoLimitTitle">
@@ -526,6 +918,8 @@ header p{font-size:16px;color:#7b7b80;letter-spacing:-.01em}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
+
+var initialLoading=document.getElementById('initialLoading');
 'use strict';
 
 /* ====== FILL THESE TWO IN — Project Settings -> API in your Supabase dashboard ====== */
@@ -540,6 +934,18 @@ var currentUser=null;
 var MAX_VIDEO_SIZE=50*1024*1024;
 var items=[];
 var previewMode='';
+var previewFolderView=false;
+var previewFolderId=null;
+var folders=[];
+var folderManagerModal=document.getElementById('folderManagerModal');
+var folderManagerList=document.getElementById('folderManagerList');
+var folderManagerTitle=document.getElementById('folderManagerTitle');
+var folderManagerSub=document.getElementById('folderManagerSub');
+var folderManagerClose=document.getElementById('folderManagerClose');
+var folderManagerCancel=document.getElementById('folderManagerCancel');
+var folderManagerSave=document.getElementById('folderManagerSave');
+var folderManagerFolderId=null;
+var folderManagerSelected={};
 var viewerIndex=-1;
 var viewerList=[];
 var viewerPos=-1;
@@ -563,7 +969,11 @@ var mainContainer=document.getElementById('mainContainer');
 var previewOverlay=document.getElementById('previewOverlay');
 var previewGrid=document.getElementById('previewGrid');
 var previewTitle=document.getElementById('previewTitle');
+var foldersBtn=document.getElementById('foldersBtn');
+var previewBack=document.getElementById('previewBack');
 var donePreview=document.getElementById('donePreview');
+var uploadFolderSelect=document.getElementById('uploadFolderSelect');
+var newFolderBtn=document.getElementById('newFolderBtn');
 var viewer=document.getElementById('viewer');
 var viewerInner=document.getElementById('viewerInner');
 var viewerImage=document.getElementById('viewerImage');
@@ -590,6 +1000,16 @@ var authError=document.getElementById('authError');
 var loginBtn=document.getElementById('loginBtn');
 var signOutBtn=document.getElementById('signOutBtn');
 var adminOnly=document.getElementById('adminOnly');
+var feedbackBtn=document.getElementById('feedbackBtn');
+var feedbackModal=document.getElementById('feedbackModal');
+var feedbackClose=document.getElementById('feedbackClose');
+var feedbackForm=document.getElementById('feedbackForm');
+var feedbackSubject=document.getElementById('feedbackSubject');
+var feedbackMessage=document.getElementById('feedbackMessage');
+var feedbackSend=document.getElementById('feedbackSend');
+var feedbackStatus=document.getElementById('feedbackStatus');
+var feedbackList=document.getElementById('feedbackList');
+var feedbackRefresh=document.getElementById('feedbackRefresh');
 
 function isVideo(item){return !!(item && item.type==='video')}
 function isImage(item){return !!(item && item.type==='image')}
@@ -639,7 +1059,7 @@ async function cloudPut(item){
   if(up.error)throw up.error;
   var ins=await sb.from('media_items').insert({
     user_id:currentUser.id,type:item.type,name:item.name||null,
-    favorite:false,storage_path:path,description:item.description||null
+    favorite:false,storage_path:path,description:item.description||null,folder_id:item.folderId||null
   }).select().single();
   if(ins.error){
     sb.storage.from(BUCKET).remove([path]).catch(function(){});
@@ -663,6 +1083,105 @@ async function cloudClearAll(){
   if(paths.length)await sb.storage.from(BUCKET).remove(paths);
   if(currentUser)await sb.from('media_items').delete().eq('user_id',currentUser.id);
 }
+async function loadFolders(){
+  var res=await sb.from('folders').select('*').order('created_at',{ascending:true}).order('name',{ascending:true});
+  if(res.error)throw res.error;
+  folders=res.data||[];
+  renderFolderSelect();
+}
+function renderFolderSelect(){
+  if(!uploadFolderSelect)return;
+  var current=uploadFolderSelect.value;
+  uploadFolderSelect.innerHTML='<option value="">No folder</option>';
+  folders.forEach(function(folder){
+    var o=document.createElement('option');o.value=String(folder.id);o.textContent=folder.name;uploadFolderSelect.appendChild(o);
+  });
+  if(folders.some(function(f){return String(f.id)===current}))uploadFolderSelect.value=current;
+}
+function openFolderManager(folderId,folderName){
+  if(!currentUser)return;
+  folderManagerFolderId=folderId;folderManagerSelected={};
+  folderManagerTitle.textContent='Add to '+folderName;
+  folderManagerSub.textContent='เลือกจากรูปและวิดีโอที่มีอยู่แล้วได้เลย ไม่ต้องอัปโหลดใหม่';
+  folderManagerList.innerHTML='';
+  if(!items.length){var empty=document.createElement('div');empty.className='folder-manager-empty';empty.textContent='ยังไม่มีรูปหรือวิดีโอในของรวม';folderManagerList.appendChild(empty)}
+
+  var imageItems=[];
+  var videoItems=[];
+  items.forEach(function(item,index){
+    if(isImage(item))imageItems.push({item:item,index:index});
+    else if(isVideo(item))videoItems.push({item:item,index:index});
+  });
+
+  function addSectionTitle(text){
+    var title=document.createElement('div');
+    title.className='folder-manager-section-title';
+    title.textContent=text;
+    folderManagerList.appendChild(title);
+  }
+
+  function addOption(entry){
+    var item=entry.item,index=entry.index;
+    var option=document.createElement('div');option.className='folder-media-option'+(String(item.folderId)===String(folderId)?' selected':'');option.dataset.index=index;
+    if(String(item.folderId)===String(folderId))folderManagerSelected[index]=true;
+    if(isImage(item)){
+      var img=document.createElement('img');img.src=getURL(item);img.alt=item.name||'Image';option.appendChild(img);
+    }else{
+      var v=document.createElement('video');v.src=getURL(item);v.muted=true;v.playsInline=true;v.preload='none';option.appendChild(v);option.appendChild(playBadge());
+    }
+    var idxBadge=document.createElement('span');idxBadge.className='folder-media-index';idxBadge.textContent=String(index+1);option.appendChild(idxBadge);
+    var nameLabel=document.createElement('span');nameLabel.className='folder-media-name';nameLabel.textContent=item.name||((isImage(item)?'Image':'Video')+' '+String(index+1));option.appendChild(nameLabel);
+    var check=document.createElement('span');check.className='folder-media-check';check.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 7"/></svg>';option.appendChild(check);
+    option.addEventListener('click',function(){
+      if(folderManagerSelected[index]){delete folderManagerSelected[index];option.classList.remove('selected')}
+      else{folderManagerSelected[index]=true;option.classList.add('selected')}
+    });
+    folderManagerList.appendChild(option);
+  }
+
+  if(imageItems.length){
+    addSectionTitle('Images');
+    imageItems.forEach(addOption);
+  }
+  if(videoItems.length){
+    addSectionTitle('Videos');
+    videoItems.forEach(addOption);
+  }
+
+  folderManagerModal.classList.add('open');folderManagerSave.disabled=false;folderManagerClose.focus();document.body.style.overflow='hidden';
+}
+function closeFolderManager(){folderManagerModal.classList.remove('open');folderManagerFolderId=null;folderManagerSelected={};if(!previewOverlay.classList.contains('open'))document.body.style.overflow=''}
+async function saveFolderManager(){
+  if(!currentUser||folderManagerFolderId===null)return;
+  folderManagerSave.disabled=true;
+  try{
+    var updates=[];
+    for(var i=0;i<items.length;i++){
+      var should=!!folderManagerSelected[i];var item=items[i];var has=String(item.folderId)===String(folderManagerFolderId);
+      if(should!==has){updates.push({item:item,value:should?folderManagerFolderId:null})}
+    }
+    for(var j=0;j<updates.length;j++){var u=updates[j];var res=await sb.from('media_items').update({folder_id:u.value}).eq('id',u.item.id);if(res.error)throw res.error;u.item.folderId=u.value===null?null:Number(u.value)}
+    closeFolderManager();
+    if(previewOverlay.classList.contains('open')){if(previewFolderView&&previewFolderId!==null)renderFolderContents(previewFolderId);else if(previewFolderView)renderFolderList();}
+    rebuildMain();
+  }catch(err){console.error(err);alert('Could not update folder. Please try again.');folderManagerSave.disabled=false}
+}
+
+async function createFolder(){
+  var name=window.prompt('Folder name');
+  if(name===null)return;
+  name=name.trim();
+  if(!name)return;
+  var exists=folders.some(function(f){return String(f.name).toLowerCase()===name.toLowerCase()});
+  if(exists){window.alert('A folder with this name already exists.');return;}
+  newFolderBtn.disabled=true;
+  try{
+    var res=await sb.from('folders').insert({name:name}).select().single();
+    if(res.error)throw res.error;
+    folders.push(res.data);renderFolderSelect();uploadFolderSelect.value=String(res.data.id);openFolderManager(res.data.id,res.data.name);
+  }catch(err){console.error(err);window.alert('Could not create folder. Please try again.');}
+  finally{newFolderBtn.disabled=false;}
+}
 async function loadGallery(){
   setEmptyStateText('Loading your gallery…');
   emptyState.style.display='block';
@@ -679,7 +1198,7 @@ async function loadGallery(){
     results.forEach(function(r){
       if(r.signed.error){console.error(r.signed.error);return}
       var row=r.row;
-      loaded.push({id:row.id,type:row.type,blob:null,name:row.name,description:row.description||'',favorite:!!row.favorite,storagePath:row.storage_path,url:r.signed.data.signedUrl,thumbnail:''});
+      loaded.push({id:row.id,type:row.type,blob:null,name:row.name,description:row.description||'',favorite:!!row.favorite,folderId:row.folder_id||null,storagePath:row.storage_path,url:r.signed.data.signedUrl,thumbnail:''});
     });
     items=loaded;
     setEmptyStateText('No photos or videos yet');
@@ -689,6 +1208,75 @@ async function loadGallery(){
   }
   rebuildMain();
 }
+
+/* ---------- feedback ---------- */
+function openFeedbackModal(){
+  feedbackStatus.textContent='';feedbackStatus.className='feedback-status';feedbackModal.hidden=false;
+  setTimeout(function(){feedbackSubject.focus()},30);
+}
+function closeFeedbackModal(){feedbackModal.hidden=true}
+feedbackBtn.addEventListener('click',openFeedbackModal);
+feedbackClose.addEventListener('click',closeFeedbackModal);
+feedbackModal.addEventListener('click',function(e){if(e.target===feedbackModal)closeFeedbackModal()});
+
+feedbackForm.addEventListener('submit',async function(e){
+  e.preventDefault();
+  var subject=feedbackSubject.value.trim();
+  var message=feedbackMessage.value.trim();
+  if(!subject||!message)return;
+  feedbackSend.disabled=true;feedbackSend.textContent='Sending…';
+  feedbackStatus.textContent='';feedbackStatus.className='feedback-status';
+  try{
+    var res=await withTimeout(sb.from('feedback').insert({subject:subject,message:message}),15000,'Request timed out. Please try again.');
+    if(res.error)throw res.error;
+    feedbackForm.reset();
+    feedbackStatus.textContent='✓ ส่ง Feedback เรียบร้อยแล้ว ขอบคุณครับ';
+    feedbackStatus.className='feedback-status success';
+    setTimeout(closeFeedbackModal,1300);
+    if(currentUser)loadFeedback();
+  }catch(err){
+    console.error('Feedback error:',err);
+    feedbackStatus.textContent='ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+    feedbackStatus.className='feedback-status error';
+  }finally{feedbackSend.disabled=false;feedbackSend.textContent='Send Feedback'}
+});
+
+function formatFeedbackDate(value){
+  try{return new Date(value).toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+  catch(e){return value||''}
+}
+async function loadFeedback(){
+  if(!currentUser)return;
+  feedbackList.innerHTML='<div class="feedback-empty">Loading feedback…</div>';
+  try{
+    var res=await sb.from('feedback').select('id,subject,message,created_at').order('created_at',{ascending:false});
+    if(res.error)throw res.error;
+    var rows=res.data||[];
+    if(!rows.length){feedbackList.innerHTML='<div class="feedback-empty">ยังไม่มี Feedback</div>';return}
+    feedbackList.innerHTML='';
+    rows.forEach(function(row){
+      var card=document.createElement('div');card.className='feedback-item';
+      var top=document.createElement('div');top.className='feedback-item-top';
+      var sub=document.createElement('div');sub.className='feedback-item-subject';sub.textContent=row.subject||'ไม่มีหัวข้อ';
+      var date=document.createElement('div');date.className='feedback-item-date';date.textContent=formatFeedbackDate(row.created_at);
+      top.appendChild(sub);top.appendChild(date);
+      var msg=document.createElement('p');msg.className='feedback-item-message';msg.textContent=row.message||'';
+      var del=document.createElement('button');del.type='button';del.className='feedback-delete';del.textContent='Delete';
+      del.addEventListener('click',async function(){
+        if(!confirm('ลบ Feedback นี้ใช่ไหม?'))return;
+        del.disabled=true;
+        var r=await sb.from('feedback').delete().eq('id',row.id);
+        if(r.error){console.error(r.error);del.disabled=false;return}
+        loadFeedback();
+      });
+      card.appendChild(top);card.appendChild(msg);card.appendChild(del);feedbackList.appendChild(card);
+    });
+  }catch(err){
+    console.error('Feedback load error:',err);
+    feedbackList.innerHTML='<div class="feedback-empty">โหลด Feedback ไม่สำเร็จ</div>';
+  }
+}
+feedbackRefresh.addEventListener('click',loadFeedback);
 
 /* ---------- auth (admin sign-in only, no public sign-up) ---------- */
 function openAuthModal(){authError.textContent='';authModal.hidden=false;authEmail.focus()}
@@ -730,6 +1318,7 @@ function handleSession(session){
     signOutBtn.hidden=false;
     adminOnly.hidden=false;
     closeAuthModal();
+    loadFeedback();
   }else{
     currentUser=null;
     loginBtn.hidden=false;
@@ -739,7 +1328,17 @@ function handleSession(session){
   }
 }
 sb.auth.onAuthStateChange(function(event,session){handleSession(session)});
-sb.auth.getSession().then(function(res){handleSession(res.data.session);loadGallery()});
+sb.auth.getSession().then(async function(res){
+  handleSession(res.data.session);
+  try{
+    await Promise.all([loadFolders(),loadGallery()]);
+  }catch(err){
+    console.error(err);
+  }finally{
+    initialLoading.setAttribute('aria-busy','false');
+    requestAnimationFrame(function(){initialLoading.classList.add('hidden');});
+  }
+});
 
 function heartSVG(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>';
@@ -769,13 +1368,25 @@ function playBadge(){
 
 /* Create a real thumbnail from the video's first usable frame.
    This prevents the preview grid from being nothing but black boxes. */
+var activeThumbnailVideos=[];
+function cancelVideoThumbnailLoads(){
+  while(activeThumbnailVideos.length){
+    var tv=activeThumbnailVideos.pop();
+    try{tv.pause();tv.removeAttribute('src');tv.load()}catch(e){}
+  }
+}
 function makeVideoThumbnail(item){
   if(item.thumbnail)return Promise.resolve(item.thumbnail);
   return new Promise(function(resolve){
     var v=document.createElement('video');
     var url=getURL(item);
     var done=false;
-    function finish(value){if(done)return;done=true;v.removeAttribute('src');v.load();resolve(value||'')}
+    function finish(value){
+      if(done)return;done=true;
+      var idx=activeThumbnailVideos.indexOf(v);if(idx!==-1)activeThumbnailVideos.splice(idx,1);
+      v.removeAttribute('src');v.load();resolve(value||'');
+    }
+    activeThumbnailVideos.push(v);
     v.muted=true;v.playsInline=true;v.preload='metadata';v.src=url;
     v.addEventListener('loadeddata',function(){
       try{
@@ -884,7 +1495,120 @@ function getPreviewIndices(mode){
   return result;
 }
 
+function renderFolderList(){
+  previewGrid.innerHTML='';
+  previewGrid.className='preview-folders-grid';
+  previewGrid.style.height='';previewGrid.style.opacity='1';
+  if(!folders.length){
+    var empty=document.createElement('div');empty.className='preview-empty folder-empty';
+    empty.innerHTML='<div class="big">▱</div><div>No folders yet</div>';
+    previewGrid.appendChild(empty);return;
+  }
+  folders.forEach(function(folder){
+    var folderItems=items.filter(function(item){return String(item.folderId)===String(folder.id)});
+    var count=folderItems.filter(function(item){return previewMode==='images'?isImage(item):previewMode==='videos'?isVideo(item):true}).length;
+    if((previewMode==='images'||previewMode==='videos')&&count===0)return;
+    var card=document.createElement('button');card.type='button';card.className='folder-card';
+    card.innerHTML='<div class="folder-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5A2.5 2.5 0 0 1 6 4h4l2 2h6a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 18 19H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M3.5 8h17"/></svg></div><div class="folder-name">'+escapeHtml(folder.name)+'</div><div class="folder-count">'+count+' '+(count===1?'item':'items')+'</div>';
+    if(currentUser){
+      var del=document.createElement('span');del.className='folder-delete-btn';del.title='Delete folder';del.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
+      del.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();deleteFolder(folder)});
+      card.appendChild(del);
+    }
+    if(currentUser){
+      var addBtn=document.createElement('button');
+      addBtn.type='button';
+      addBtn.className='folder-add-btn';
+      addBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add Media';
+      addBtn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openFolderManager(folder.id,folder.name)});
+      card.appendChild(addBtn);
+    }
+    card.addEventListener('click',function(){openFolder(folder.id,folder.name)});
+    previewGrid.appendChild(card);
+  });
+}
+async function deleteFolder(folder){
+  if(!currentUser||!folder)return;
+  var count=items.filter(function(item){return String(item.folderId)===String(folder.id)}).length;
+  var message=count?('Delete folder "'+folder.name+'"? The '+count+' item'+(count===1?'':'s')+' inside will stay in your gallery but become unfiled.'):'Delete folder "'+folder.name+'"?';
+  if(!window.confirm(message))return;
+  try{
+    var res=await sb.from('folders').delete().eq('id',folder.id);
+    if(res.error)throw res.error;
+    items.forEach(function(item){if(String(item.folderId)===String(folder.id))item.folderId=null});
+    folders=folders.filter(function(f){return String(f.id)!==String(folder.id)});
+    renderFolderSelect();
+    if(previewOverlay.classList.contains('open')&&previewFolderView){
+      previewFolderView=false;previewFolderId=null;previewBack.hidden=true;foldersBtn.hidden=!(previewMode==='images'||previewMode==='videos');previewTitle.textContent='Folders';renderFolderList();
+    }
+  }catch(err){
+    console.error(err);window.alert('Could not delete folder. Please try again.');
+  }
+}
+function openFolder(folderId,name){
+  previewFolderView=true;previewFolderId=folderId;
+  previewBack.hidden=false;foldersBtn.hidden=true;previewTitle.textContent=name;
+  renderFolderContents(folderId);
+}
+function getFolderIndices(folderId){
+  var result=[];items.forEach(function(item,index){
+    if(String(item.folderId)!==String(folderId))return;
+    if(previewMode==='images'&&!isImage(item))return;
+    if(previewMode==='videos'&&!isVideo(item))return;
+    result.push(index);
+  });
+  return result;
+}
+function openFolderViewer(index,folderId){
+  cancelVideoThumbnailLoads();
+  var list=getFolderIndices(folderId);
+  var pos=list.indexOf(index);
+  if(pos===-1)return;
+  viewerList=list;viewerPos=pos;viewerIndex=index;
+  var item=items[index];clearViewerMedia();renderViewerDescription(item);viewerHeart.style.display=item.favorite?'flex':'none';
+  if(isImage(item)){viewerImage.src=getURL(item);viewerImage.style.display='block'}
+  else{var v=document.createElement('video');v.src=getURL(item);v.controls=true;v.playsInline=true;v.preload='metadata';v.autoplay=false;viewerVideoHolder.className='viewer-video-holder';viewerVideoHolder.appendChild(v)}
+  viewer.classList.add('open');closeViewer.focus();
+}
+function renderFolderContents(folderId){
+  previewGrid.innerHTML='';
+  previewGrid.className='preview-folder-items-grid folder-enter';
+  previewGrid.style.height='';
+  previewGrid.style.opacity='';
+  var shown=[];items.forEach(function(item,index){
+    if(String(item.folderId)!==String(folderId))return;
+    if(previewMode==='images'&&!isImage(item))return;
+    if(previewMode==='videos'&&!isVideo(item))return;
+    shown.push({item:item,index:index});
+  });
+  if(!shown.length){
+    var empty=document.createElement('div');empty.className='preview-empty';empty.innerHTML='<div class="big">▧</div><div>No items in this folder yet</div>';previewGrid.appendChild(empty);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){previewGrid.classList.remove('folder-enter')})});
+    return;
+  }
+  shown.forEach(function(entry){
+    var item=entry.item,index=entry.index;var card=document.createElement('div');card.dataset.id=item.id;card.className='preview-card '+(isVideo(item)?'video':'image');
+    if(isImage(item)){var img=document.createElement('img');img.src=getURL(item);img.alt=item.name||'Image';img.draggable=false;card.appendChild(img)}
+    else{var v=document.createElement('video');v.src=getURL(item);v.muted=true;v.playsInline=true;v.preload='none';v.setAttribute('aria-label',item.name||'Video');card.appendChild(v);card.appendChild(playBadge());makeVideoThumbnail(item).then(function(src){if(src){card.style.backgroundImage='url("'+src+'")';card.style.backgroundSize='cover';card.style.backgroundPosition='center'}})}
+    if(item.favorite){var heart=document.createElement('div');heart.className='preview-heart';heart.innerHTML=heartSVG();card.appendChild(heart)}
+    card.addEventListener('click',function(){openFolderViewer(index,folderId)});previewGrid.appendChild(card);
+  });
+  requestAnimationFrame(function(){
+    if(previewGrid.querySelectorAll('.preview-card.image').length)layoutFolderMixedGrid();
+    requestAnimationFrame(function(){previewGrid.classList.remove('folder-enter')});
+  });
+}
+function layoutFolderMixedGrid(){
+  var container=previewGrid;if(!container.classList.contains('preview-folder-items-grid'))return;
+  var cards=Array.prototype.slice.call(container.children).filter(function(el){return el.classList&&el.classList.contains('preview-card')});
+  var gap=window.innerWidth<=600?11:18;var cols=window.innerWidth<=600?2:3;var width=(container.clientWidth-(cols-1)*gap)/cols;
+  var heights=new Array(cols).fill(0);
+  cards.forEach(function(card){var c=heights.indexOf(Math.min.apply(null,heights));card.style.width=width+'px';card.style.left=(c*(width+gap))+'px';card.style.top=heights[c]+'px';heights[c]+=card.offsetHeight+gap});
+  container.style.height=Math.max.apply(null,heights)+'px';
+}
 function renderPreview(mode){
+  previewFolderView=false;previewFolderId=null;previewBack.hidden=true;
+  foldersBtn.hidden=mode!=='images';
   previewGrid.innerHTML='';
   previewGrid.className='';
   previewGrid.style.height='';
@@ -979,7 +1703,9 @@ function openPreview(mode){
   if(mode==='videos'&&!items.some(isVideo))return;
   if(mode==='favorites'&&!items.some(function(x){return x.favorite}))return;
   previewMode=mode;
+  previewFolderView=false;previewFolderId=null;
   previewTitle.textContent=mode==='images'?'Preview Images':mode==='videos'?'Preview Videos':'Preview Favorite';
+  foldersBtn.hidden=!(mode==='images'||mode==='videos');previewBack.hidden=true;
   renderPreview(mode);
   previewOverlay.classList.add('open');
   previewOverlay.scrollTop=0;
@@ -991,8 +1717,10 @@ function closePreview(){
   previewOverlay.classList.remove('open');
   document.body.style.overflow='';
   if('inert' in mainContainer)mainContainer.inert=false;
-  previewMode='';
+  previewMode='';previewFolderView=false;previewFolderId=null;
+  foldersBtn.hidden=true;previewBack.hidden=true;
 }
+
 
 function resetDescriptionEditor(){
   viewerDescription.classList.remove('editing');
@@ -1056,6 +1784,7 @@ function clearViewerMedia(){
   }
 }
 function openViewer(index,mode){
+  cancelVideoThumbnailLoads();
   if(index<0||index>=items.length)return;
   mode=mode||previewMode;
   viewerList=getPreviewIndices(mode);
@@ -1097,7 +1826,8 @@ function changeViewer(direction){
   viewerInner.classList.remove('swipe-left','swipe-right');
   void viewerInner.offsetWidth;
   viewerInner.classList.add(direction>0?'swipe-left':'swipe-right');
-  openViewer(nextIndex,previewMode);
+  if(previewFolderView&&previewFolderId!==null)openFolderViewer(nextIndex,previewFolderId);
+  else openViewer(nextIndex,previewMode);
 }
 
 viewer.addEventListener('touchstart',function(e){
@@ -1116,6 +1846,7 @@ viewer.addEventListener('touchend',function(e){
 },{passive:true});
 
 document.addEventListener('keydown',function(e){
+  if(!feedbackModal.hidden&&e.key==='Escape'){e.preventDefault();closeFeedbackModal();return;}
   if(videoLimitModal.classList.contains('open')&&e.key==='Escape'){e.preventDefault();closeVideoLimitWarning();return;}
   if(viewer.classList.contains('open')){
     if(e.key==='ArrowLeft'){e.preventDefault();changeViewer(-1)}
@@ -1136,6 +1867,19 @@ previewImages.addEventListener('click',function(){openPreview('images')});
 previewVideos.addEventListener('click',function(){openPreview('videos')});
 previewFavorites.addEventListener('click',function(){openPreview('favorites')});
 donePreview.addEventListener('click',closePreview);
+foldersBtn.addEventListener('click',function(){
+  if(previewMode!=='images'&&previewMode!=='videos')return;
+  previewFolderView=true;previewFolderId=null;previewBack.hidden=true;foldersBtn.hidden=true;previewTitle.textContent='Folders';renderFolderList();
+});
+previewBack.addEventListener('click',function(){
+  if(previewFolderView&&previewFolderId!==null){previewFolderId=null;previewBack.hidden=true;foldersBtn.hidden=true;previewTitle.textContent='Folders';renderFolderList();return;}
+  renderPreview(previewMode);
+});
+newFolderBtn.addEventListener('click',createFolder);
+folderManagerClose.addEventListener('click',closeFolderManager);
+folderManagerCancel.addEventListener('click',closeFolderManager);
+folderManagerSave.addEventListener('click',saveFolderManager);
+folderManagerModal.addEventListener('click',function(e){if(e.target===folderManagerModal)closeFolderManager()});
 
 async function addFiles(files,type){
   var batch=[];
@@ -1145,7 +1889,7 @@ async function addFiles(files,type){
       showVideoLimitWarning(file);
       continue;
     }
-    var item={id:'tmp-'+newFileId(),type:type,blob:file,name:file.name,description:'',favorite:false,url:URL.createObjectURL(file),thumbnail:''};
+    var item={id:'tmp-'+newFileId(),type:type,blob:file,name:file.name,description:'',favorite:false,folderId:uploadFolderSelect.value?Number(uploadFolderSelect.value):null,url:URL.createObjectURL(file),thumbnail:''};
     items.push(item);
     batch.push(item);
   }
